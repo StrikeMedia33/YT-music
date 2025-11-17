@@ -1,161 +1,267 @@
 /**
- * Home Page
+ * Dashboard Home Page
  *
- * Dashboard overview of the application.
+ * Overview dashboard with statistics and quick actions.
  */
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { FiVideo, FiList, FiCheckCircle, FiAlertCircle, FiPlus } from 'react-icons/fi';
 import { Button } from '@/components/ui';
+import { listVideoJobs, listChannels, type VideoJob, type Channel } from '@/lib/api';
 
-export default function HomePage() {
+export default function DashboardPage() {
+  const [jobs, setJobs] = useState<VideoJob[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      const [jobsData, channelsData] = await Promise.all([
+        listVideoJobs({ limit: 10 }),
+        listChannels({ limit: 10 }),
+      ]);
+      setJobs(jobsData);
+      setChannels(channelsData);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Calculate statistics
+  const stats = {
+    total: jobs.length,
+    completed: jobs.filter((j) => j.status === 'completed').length,
+    inProgress: jobs.filter((j) =>
+      ['generating_music', 'generating_image', 'rendering'].includes(j.status)
+    ).length,
+    failed: jobs.filter((j) => j.status === 'failed').length,
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <div className="text-gray-500">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            AI Background Channel Studio
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Automate the creation of high-quality background music videos for
-            YouTube using AI-generated music and visuals.
+    <div className="p-8">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        {/* Header */}
+        <motion.div variants={itemVariants} className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">
+            Welcome to AI Background Channel Studio
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/channels">
-              <Button size="lg">Get Started</Button>
+        </motion.div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <motion.div variants={itemVariants}>
+            <StatCard
+              icon={<FiVideo className="w-6 h-6" />}
+              label="Total Jobs"
+              value={stats.total}
+              color="blue"
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <StatCard
+              icon={<FiCheckCircle className="w-6 h-6" />}
+              label="Completed"
+              value={stats.completed}
+              color="green"
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <StatCard
+              icon={<FiList className="w-6 h-6" />}
+              label="In Progress"
+              value={stats.inProgress}
+              color="yellow"
+            />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <StatCard
+              icon={<FiAlertCircle className="w-6 h-6" />}
+              label="Failed"
+              value={stats.failed}
+              color="red"
+            />
+          </motion.div>
+        </div>
+
+        {/* Quick Actions */}
+        <motion.div variants={itemVariants} className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/video-jobs/create">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 p-6 hover:border-blue-500 transition cursor-pointer"
+              >
+                <FiPlus className="w-8 h-8 text-blue-600 mb-2" />
+                <h3 className="font-semibold text-gray-900">Create Video Job</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Start a new video generation pipeline
+                </p>
+              </motion.div>
             </Link>
+
+            <Link href="/channels">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition cursor-pointer"
+              >
+                <FiList className="w-8 h-8 text-gray-700 mb-2" />
+                <h3 className="font-semibold text-gray-900">Manage Channels</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {channels.length} channel{channels.length !== 1 ? 's' : ''} configured
+                </p>
+              </motion.div>
+            </Link>
+
             <Link href="/video-jobs">
-              <Button size="lg" variant="secondary">
-                View Jobs
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition cursor-pointer"
+              >
+                <FiVideo className="w-8 h-8 text-gray-700 mb-2" />
+                <h3 className="font-semibold text-gray-900">View All Jobs</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Browse and manage video jobs
+                </p>
+              </motion.div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Recent Jobs */}
+        <motion.div variants={itemVariants}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Jobs</h2>
+            <Link href="/video-jobs">
+              <Button variant="ghost" size="sm">
+                View All
               </Button>
             </Link>
           </div>
-        </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-16">
-          <FeatureCard
-            icon="🎵"
-            title="AI Music Generation"
-            description="Generate 20 unique music tracks (3-4 minutes each) using advanced AI music providers."
-          />
-          <FeatureCard
-            icon="🎨"
-            title="Visual Generation"
-            description="Create 20 unique visuals matched to each track for engaging video content."
-          />
-          <FeatureCard
-            icon="🎬"
-            title="Video Rendering"
-            description="Automatically render professional 1080p videos with crossfades and visual-audio pairing."
-          />
-          <FeatureCard
-            icon="📝"
-            title="Metadata Generation"
-            description="Generate YouTube titles, descriptions with timestamps, and SEO-optimized tags."
-          />
-          <FeatureCard
-            icon="⚙️"
-            title="Background Processing"
-            description="Automated pipeline execution with status tracking and error handling."
-          />
-          <FeatureCard
-            icon="📊"
-            title="Job Management"
-            description="Track and manage all video generation jobs from a centralized dashboard."
-          />
-        </div>
-
-        {/* Workflow Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            5-Step Automated Pipeline
-          </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-            <WorkflowStep
-              number="1"
-              title="Prompts"
-              description="Generate 20 music + 20 visual prompts"
-            />
-            <WorkflowStep
-              number="2"
-              title="Music"
-              description="Create 20 unique audio tracks"
-            />
-            <WorkflowStep
-              number="3"
-              title="Visuals"
-              description="Generate 20 matched visuals"
-            />
-            <WorkflowStep
-              number="4"
-              title="Render"
-              description="Create final MP4 video"
-            />
-            <WorkflowStep
-              number="5"
-              title="Metadata"
-              description="Generate YouTube metadata"
-            />
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="bg-blue-600 rounded-xl shadow-lg p-8 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">
-            Ready to Create Your First Video?
-          </h2>
-          <p className="text-lg mb-6 opacity-90">
-            Set up your channel and start generating high-quality background
-            music videos today.
-          </p>
-          <Link href="/channels">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-              Create Your First Channel
-            </Button>
-          </Link>
-        </div>
-      </div>
+          {jobs.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <p className="text-gray-500">No jobs yet. Create your first video!</p>
+              <Link href="/video-jobs/create">
+                <Button className="mt-4">
+                  <FiPlus className="mr-2" />
+                  Create Video Job
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Job ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Created
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {jobs.slice(0, 5).map((job) => (
+                    <tr key={job.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          href={`/video-jobs/${job.id}`}
+                          className="text-sm font-mono text-blue-600 hover:text-blue-800"
+                        >
+                          {job.id.substring(0, 8)}...
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">{job.status}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(job.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
 
-function FeatureCard({
+function StatCard({
   icon,
-  title,
-  description,
+  label,
+  value,
+  color,
 }: {
-  icon: string;
-  title: string;
-  description: string;
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  color: 'blue' | 'green' | 'yellow' | 'red';
 }) {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
-      <div className="text-4xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm">{description}</p>
-    </div>
-  );
-}
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    yellow: 'bg-yellow-50 text-yellow-600',
+    red: 'bg-red-50 text-red-600',
+  };
 
-function WorkflowStep({
-  number,
-  title,
-  description,
-}: {
-  number: string;
-  title: string;
-  description: string;
-}) {
   return (
-    <div className="text-center">
-      <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3 text-xl font-bold">
-        {number}
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="bg-white rounded-lg shadow p-6"
+    >
+      <div className={`inline-flex p-3 rounded-lg ${colorClasses[color]} mb-4`}>
+        {icon}
       </div>
-      <h4 className="font-semibold text-gray-900 mb-1">{title}</h4>
-      <p className="text-sm text-gray-600">{description}</p>
-    </div>
+      <p className="text-sm text-gray-600">{label}</p>
+      <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+    </motion.div>
   );
 }

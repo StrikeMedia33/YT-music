@@ -7,8 +7,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { getVideoJob, type VideoJobDetail } from '@/lib/api';
 import { Button, Loading, ErrorMessage, StatusBadge } from '@/components/ui';
+import { useJobProgress } from '@/lib/hooks/use-job-progress';
+import { ProgressTracker } from '@/components/progress/ProgressTracker';
 
 export default function VideoJobDetailPage() {
   const params = useParams();
@@ -18,6 +21,27 @@ export default function VideoJobDetailPage() {
   const [job, setJob] = useState<VideoJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Real-time progress tracking via SSE
+  const shouldTrackProgress =
+    job &&
+    !['completed', 'failed', 'ready_for_export'].includes(job.status);
+
+  const { status, progress, message, isConnected } = useJobProgress({
+    jobId,
+    enabled: shouldTrackProgress,
+    onUpdate: (event) => {
+      console.log('Progress update:', event);
+      // Optionally reload job data when status changes
+      if (event.status !== job?.status) {
+        loadJob();
+      }
+    },
+    onComplete: () => {
+      // Reload job data when pipeline completes
+      loadJob();
+    },
+  });
 
   useEffect(() => {
     if (jobId) {
@@ -69,7 +93,11 @@ export default function VideoJobDetailPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <Button
             variant="ghost"
             size="sm"
@@ -86,13 +114,40 @@ export default function VideoJobDetailPage() {
               <p className="mt-1 text-sm text-gray-500 font-mono">
                 ID: {job.id}
               </p>
+              {isConnected && (
+                <p className="mt-1 text-xs text-green-600 flex items-center">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+                  Live updates enabled
+                </p>
+              )}
             </div>
             <StatusBadge status={job.status} />
           </div>
-        </div>
+        </motion.div>
+
+        {/* Progress Tracker */}
+        {!['completed', 'failed'].includes(job.status) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6"
+          >
+            <ProgressTracker
+              currentStatus={status || job.status}
+              progress={progress}
+              message={message}
+            />
+          </motion.div>
+        )}
 
         {/* Overview Section */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white shadow rounded-lg p-6 mb-6"
+        >
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Job Overview
           </h2>
@@ -140,11 +195,16 @@ export default function VideoJobDetailPage() {
               </div>
             )}
           </dl>
-        </div>
+        </motion.div>
 
         {/* Prompts Section */}
         {job.prompts_json && (
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white shadow rounded-lg p-6 mb-6"
+          >
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Generated Prompts
             </h2>
@@ -195,12 +255,17 @@ export default function VideoJobDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Audio Tracks Section */}
         {job.audio_tracks && job.audio_tracks.length > 0 && (
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white shadow rounded-lg p-6 mb-6"
+          >
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Audio Tracks ({job.audio_tracks.length})
             </h2>
@@ -246,12 +311,17 @@ export default function VideoJobDetailPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Images Section */}
         {job.images && job.images.length > 0 && (
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white shadow rounded-lg p-6 mb-6"
+          >
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Generated Visuals ({job.images.length})
             </h2>
@@ -287,12 +357,17 @@ export default function VideoJobDetailPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Render Task Section */}
         {job.render_task && (
-          <div className="bg-white shadow rounded-lg p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white shadow rounded-lg p-6"
+          >
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Render Information
             </h2>
@@ -321,7 +396,7 @@ export default function VideoJobDetailPage() {
                 </dd>
               </div>
             </dl>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
