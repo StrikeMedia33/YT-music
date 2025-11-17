@@ -9,6 +9,10 @@ from .video_job import VideoJob, VideoJobStatus
 from .audio_track import AudioTrack, MusicProvider
 from .image import Image, VisualProvider
 from .render_task import RenderTask, RenderStatus
+from .genre import Genre
+from .video_idea import VideoIdea
+from .idea_prompt import IdeaPrompt
+from .video_job_idea import VideoJobIdea
 
 __all__ = [
     # Database utilities
@@ -24,6 +28,10 @@ __all__ = [
     "AudioTrack",
     "Image",
     "RenderTask",
+    "Genre",
+    "VideoIdea",
+    "IdeaPrompt",
+    "VideoJobIdea",
     # Enums
     "VideoJobStatus",
     "MusicProvider",

@@ -124,7 +124,7 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants} className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/video-jobs/create">
+            <Link href="/video-jobs">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -182,7 +182,7 @@ export default function DashboardPage() {
           {jobs.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
               <p className="text-gray-500">No jobs yet. Create your first video!</p>
-              <Link href="/video-jobs/create">
+              <Link href="/video-jobs">
                 <Button className="mt-4">
                   <FiPlus className="mr-2" />
                   Create Video Job

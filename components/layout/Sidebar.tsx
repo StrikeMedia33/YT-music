@@ -17,6 +17,7 @@ import {
   FiBarChart2,
   FiMenu,
   FiX,
+  FiLightbulb,
 } from 'react-icons/fi';
 import { useUIStore } from '@/lib/store/ui-store';
 import clsx from 'clsx';
@@ -32,6 +33,11 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     href: '/',
     icon: <FiHome className="w-5 h-5" />,
+  },
+  {
+    label: 'Ideas Library',
+    href: '/ideas',
+    icon: <FiLightbulb className="w-5 h-5" />,
   },
   {
     label: 'Video Jobs',
@@ -104,7 +110,11 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            // Match exact path or nested routes (e.g., /video-jobs matches /video-jobs/123)
+            // Special handling for root path to avoid matching everything
+            const isActive = item.href === '/'
+              ? pathname === '/'
+              : pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link key={item.href} href={item.href}>
                 <motion.div

@@ -115,6 +115,13 @@ class VideoJob(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    idea_link = relationship(
+        "VideoJobIdea",
+        back_populates="video_job",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        uselist=False,  # One-to-one relationship
+    )
 
     def __repr__(self):
         return f"<VideoJob(id={self.id}, status='{self.status.value}', niche='{self.niche_label}')>"

@@ -98,14 +98,15 @@ export default function VideoJobDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/video-jobs')}
-            className="mb-4"
-          >
-            ← Back to Jobs
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="secondary"
+              onClick={() => router.push('/video-jobs')}
+            >
+              ← Back to All Jobs
+            </Button>
+            <StatusBadge status={job.status} />
+          </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -121,7 +122,6 @@ export default function VideoJobDetailPage() {
                 </p>
               )}
             </div>
-            <StatusBadge status={job.status} />
           </div>
         </motion.div>
 

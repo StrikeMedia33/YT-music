@@ -15,10 +15,13 @@ import {
   type VideoJobCreate,
   type Channel,
 } from '@/lib/api';
-import { Button, Loading, ErrorMessage, StatusBadge } from '@/components/ui';
+import { Button, Loading, ErrorMessage, StatusBadge, useToast } from '@/components/ui';
+import { useUIStore } from '@/lib/store/ui-store';
 
 export default function VideoJobsPage() {
   const router = useRouter();
+  const { addNotification } = useUIStore();
+  const toast = useToast();
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,10 +73,17 @@ export default function VideoJobsPage() {
       setShowCreateForm(false);
       await loadData();
 
+      // Show success toast
+      toast.success(
+        'Video job created successfully!',
+        'The pipeline will begin processing automatically.'
+      );
+
       // Navigate to job detail
       router.push(`/video-jobs/${newJob.id}`);
     } catch (err: any) {
       setError(err.message || 'Failed to create video job');
+      toast.error('Failed to create video job', err.message);
     } finally {
       setCreating(false);
     }
@@ -215,19 +225,34 @@ export default function VideoJobsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Job ID
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Duration
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Created
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Actions
                     </th>
                   </tr>
@@ -236,8 +261,17 @@ export default function VideoJobsPage() {
                   {jobs.map((job) => (
                     <tr
                       key={job.id}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-gray-50 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500"
                       onClick={() => handleViewJob(job.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleViewJob(job.id);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`View details for job ${job.id.substring(0, 8)}, status: ${job.status}`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-mono text-gray-900">

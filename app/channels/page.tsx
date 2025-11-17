@@ -13,9 +13,10 @@ import {
   type Channel,
   type ChannelCreate,
 } from '@/lib/api';
-import { Button, Loading, ErrorMessage } from '@/components/ui';
+import { Button, Loading, ErrorMessage, useToast } from '@/components/ui';
 
 export default function ChannelsPage() {
+  const toast = useToast();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,13 @@ export default function ChannelsPage() {
     brand_niche: '',
     is_active: true,
   });
+
+  // Form validation errors
+  const [formErrors, setFormErrors] = useState<{
+    name?: string;
+    youtube_channel_id?: string;
+    brand_niche?: string;
+  }>({});
 
   // Load channels on mount
   useEffect(() => {
@@ -48,13 +56,41 @@ export default function ChannelsPage() {
     }
   }
 
+  function validateForm(): boolean {
+    const errors: typeof formErrors = {};
+
+    if (!formData.name.trim()) {
+      errors.name = 'Channel name is required';
+    } else if (formData.name.length < 3) {
+      errors.name = 'Channel name must be at least 3 characters';
+    }
+
+    if (!formData.youtube_channel_id.trim()) {
+      errors.youtube_channel_id = 'YouTube Channel ID is required';
+    } else if (!formData.youtube_channel_id.startsWith('UC')) {
+      errors.youtube_channel_id = 'YouTube Channel ID must start with "UC"';
+    }
+
+    if (!formData.brand_niche.trim()) {
+      errors.brand_niche = 'Brand niche is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
   async function handleCreateChannel(e: React.FormEvent) {
     e.preventDefault();
+
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       setCreating(true);
       setError(null);
-      await createChannel(formData);
+      const newChannel = await createChannel(formData);
 
       // Reset form and reload channels
       setFormData({
@@ -63,10 +99,15 @@ export default function ChannelsPage() {
         brand_niche: '',
         is_active: true,
       });
+      setFormErrors({});
       setShowCreateForm(false);
       await loadChannels();
+
+      // Show success toast
+      toast.success('Channel created successfully!', `${formData.name} is now ready for video generation.`);
     } catch (err: any) {
       setError(err.message || 'Failed to create channel');
+      toast.error('Failed to create channel', err.message);
     } finally {
       setCreating(false);
     }
@@ -76,8 +117,13 @@ export default function ChannelsPage() {
     try {
       await toggleChannelActive(channelId, !currentStatus);
       await loadChannels();
+      toast.success(
+        `Channel ${!currentStatus ? 'enabled' : 'disabled'}`,
+        `Channel is now ${!currentStatus ? 'active' : 'inactive'}.`
+      );
     } catch (err: any) {
       setError(err.message || 'Failed to update channel');
+      toast.error('Failed to update channel', err.message);
     }
   }
 
@@ -132,19 +178,33 @@ export default function ChannelsPage() {
                     htmlFor="name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Channel Name
+                    Channel Name <span className="text-red-600" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
                     id="name"
                     required
+                    aria-required="true"
+                    aria-invalid={formErrors.name ? 'true' : 'false'}
+                    aria-describedby={formErrors.name ? 'name-error' : undefined}
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      // Clear error on change
+                      if (formErrors.name) {
+                        setFormErrors({ ...formErrors, name: undefined });
+                      }
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="My Ambient Channel"
                   />
+                  {formErrors.name && (
+                    <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
+                      {formErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -152,22 +212,36 @@ export default function ChannelsPage() {
                     htmlFor="youtube_channel_id"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    YouTube Channel ID
+                    YouTube Channel ID <span className="text-red-600" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
                     id="youtube_channel_id"
                     required
+                    aria-required="true"
+                    aria-invalid={formErrors.youtube_channel_id ? 'true' : 'false'}
+                    aria-describedby={formErrors.youtube_channel_id ? 'youtube_channel_id-error' : undefined}
                     value={formData.youtube_channel_id}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setFormData({
                         ...formData,
                         youtube_channel_id: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      });
+                      // Clear error on change
+                      if (formErrors.youtube_channel_id) {
+                        setFormErrors({ ...formErrors, youtube_channel_id: undefined });
+                      }
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.youtube_channel_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="UC..."
                   />
+                  {formErrors.youtube_channel_id && (
+                    <p id="youtube_channel_id-error" className="mt-1 text-sm text-red-600" role="alert">
+                      {formErrors.youtube_channel_id}
+                    </p>
+                  )}
                 </div>
 
                 <div className="sm:col-span-2">
@@ -175,19 +249,33 @@ export default function ChannelsPage() {
                     htmlFor="brand_niche"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Brand Niche
+                    Brand Niche <span className="text-red-600" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
                     id="brand_niche"
                     required
+                    aria-required="true"
+                    aria-invalid={formErrors.brand_niche ? 'true' : 'false'}
+                    aria-describedby={formErrors.brand_niche ? 'brand_niche-error' : undefined}
                     value={formData.brand_niche}
-                    onChange={(e) =>
-                      setFormData({ ...formData, brand_niche: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) => {
+                      setFormData({ ...formData, brand_niche: e.target.value });
+                      // Clear error on change
+                      if (formErrors.brand_niche) {
+                        setFormErrors({ ...formErrors, brand_niche: undefined });
+                      }
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.brand_niche ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Ambient Electronic Music"
                   />
+                  {formErrors.brand_niche && (
+                    <p id="brand_niche-error" className="mt-1 text-sm text-red-600" role="alert">
+                      {formErrors.brand_niche}
+                    </p>
+                  )}
                 </div>
               </div>
 

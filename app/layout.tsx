@@ -6,6 +6,7 @@
 import React from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
+import { ToastContainer } from '@/components/ui';
 import './globals.css';
 
 export const metadata = {
@@ -36,6 +37,9 @@ export default function RootLayout({
             </main>
           </div>
         </div>
+
+        {/* Global Toast Notifications */}
+        <ToastContainer />
       </body>
     </html>
   );

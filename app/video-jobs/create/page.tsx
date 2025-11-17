@@ -1,33 +1,26 @@
 /**
  * Video Job Create Page
  *
- * Multi-step wizard for creating new video jobs.
+ * Redirects to the video jobs list page where users can create jobs.
+ * This maintains backward compatibility with any existing links.
  */
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { VideoCreationWizard } from '@/components/wizard/VideoCreationWizard';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loading } from '@/components/ui';
 
 export default function CreateVideoJobPage() {
-  return (
-    <div className="p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Create Video Job</h1>
-            <p className="text-gray-600 mt-2">
-              Follow the guided steps to create a new AI-generated video
-            </p>
-          </div>
+  const router = useRouter();
 
-          <VideoCreationWizard />
-        </div>
-      </motion.div>
+  useEffect(() => {
+    // Redirect to video jobs list page
+    router.replace('/video-jobs');
+  }, [router]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Loading size="lg" message="Redirecting..." />
     </div>
   );
 }
