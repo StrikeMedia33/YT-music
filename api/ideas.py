@@ -278,3 +278,103 @@ def mark_idea_used(idea_id: str, db: Session = Depends(get_db)):
     db.refresh(idea)
 
     return {"message": "Idea usage tracked", "times_used": idea.times_used}
+
+
+@router.post("/{idea_id}/generate-prompts", status_code=200)
+def generate_prompts_for_idea(idea_id: str, db: Session = Depends(get_db)):
+    """
+    Generate AI prompts for music and visuals for this idea using LLM.
+    Creates or updates the IdeaPrompt record with 20 music + 20 visual prompts.
+    """
+    from services.prompt_generator import PromptGeneratorService
+    from services.metadata_generator import MetadataGeneratorService
+    import os
+
+    # Get the idea
+    idea = db.query(VideoIdea).filter(VideoIdea.id == idea_id).first()
+    if not idea:
+        raise HTTPException(status_code=404, detail="Video idea not found")
+
+    # Check if OpenAI API key is available
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY not configured. Please set the environment variable."
+        )
+
+    try:
+        # Initialize prompt generator
+        prompt_service = PromptGeneratorService()
+
+        # Generate music and visual prompts
+        result = prompt_service.generate_prompts(
+            niche_label=idea.niche_label,
+            mood_keywords=idea.mood_tags,
+            target_duration_minutes=idea.target_duration_minutes
+        )
+
+        # Initialize metadata generator
+        metadata_service = MetadataGeneratorService()
+
+        # Generate YouTube metadata
+        metadata = metadata_service.generate_metadata(
+            niche_label=idea.niche_label,
+            mood_keywords=idea.mood_tags,
+            music_prompts=result["music_prompts"],
+            target_duration_minutes=idea.target_duration_minutes
+        )
+
+        # Check if prompts already exist for this idea
+        existing_prompts = db.query(IdeaPrompt).filter(IdeaPrompt.idea_id == idea_id).first()
+
+        if existing_prompts:
+            # Update existing
+            existing_prompts.music_prompts = result["music_prompts"]
+            existing_prompts.visual_prompts = result["visual_prompts"]
+            existing_prompts.metadata_title = metadata.get("title")
+            existing_prompts.metadata_description = metadata.get("description")
+            existing_prompts.metadata_tags = metadata.get("tags", [])
+            existing_prompts.generation_params = {
+                "model": prompt_service.model,
+                "niche_label": idea.niche_label,
+                "mood_keywords": idea.mood_tags,
+                "target_duration_minutes": idea.target_duration_minutes,
+            }
+            db.commit()
+            db.refresh(existing_prompts)
+            message = "Prompts regenerated successfully"
+        else:
+            # Create new
+            new_prompts = IdeaPrompt(
+                idea_id=idea_id,
+                music_prompts=result["music_prompts"],
+                visual_prompts=result["visual_prompts"],
+                metadata_title=metadata.get("title"),
+                metadata_description=metadata.get("description"),
+                metadata_tags=metadata.get("tags", []),
+                generation_params={
+                    "model": prompt_service.model,
+                    "niche_label": idea.niche_label,
+                    "mood_keywords": idea.mood_tags,
+                    "target_duration_minutes": idea.target_duration_minutes,
+                }
+            )
+            db.add(new_prompts)
+            db.commit()
+            db.refresh(new_prompts)
+            message = "Prompts generated successfully"
+
+        return {
+            "message": message,
+            "idea_id": idea_id,
+            "num_music_prompts": len(result["music_prompts"]),
+            "num_visual_prompts": len(result["visual_prompts"]),
+            "metadata_generated": bool(metadata.get("title")),
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=f"Prompt generation failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

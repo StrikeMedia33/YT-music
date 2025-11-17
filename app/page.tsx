@@ -180,15 +180,31 @@ export default function DashboardPage() {
           </div>
 
           {jobs.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-              <p className="text-gray-500">No jobs yet. Create your first video!</p>
-              <Link href="/video-jobs">
-                <Button className="mt-4">
-                  <FiPlus className="mr-2" />
-                  Create Video Job
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border-2 border-dashed border-blue-200 p-12 text-center"
+            >
+              <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+                <FiVideo className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-heading-md text-gray-900 mb-3">
+                Ready to create your first video?
+              </h3>
+              <p className="text-body-md text-gray-600 mb-6 max-w-md mx-auto">
+                Generate professional AI-powered background music videos in minutes.
+                Perfect for YouTube channels focused on ambient, lo-fi, and study music.
+              </p>
+              <Link href="/video-jobs/create">
+                <Button size="lg" className="shadow-lg">
+                  <FiPlus className="mr-2 w-5 h-5" />
+                  Create Your First Video
                 </Button>
               </Link>
-            </div>
+              <p className="text-caption text-gray-500 mt-4">
+                Average generation time: 30-45 minutes
+              </p>
+            </motion.div>
           ) : (
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">

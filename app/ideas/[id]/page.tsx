@@ -20,7 +20,7 @@ import {
   FiCheckCircle,
   FiXCircle,
 } from 'react-icons/fi';
-import { getIdea, deleteIdea, cloneIdea, updateIdea } from '@/lib/api';
+import { getIdea, deleteIdea, cloneIdea, updateIdea, generatePromptsForIdea } from '@/lib/api';
 import type { VideoIdeaDetail, VideoIdeaUpdate } from '@/lib/api';
 
 interface Props {
@@ -34,6 +34,7 @@ export default function IdeaDetailPage({ params }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<VideoIdeaUpdate>({});
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     loadIdea();
@@ -90,6 +91,24 @@ export default function IdeaDetailPage({ params }: Props) {
       router.push('/ideas');
     } catch (err: any) {
       alert(`Failed to delete: ${err.message}`);
+    }
+  }
+
+  async function handleGeneratePrompts() {
+    if (!idea) return;
+    setIsGenerating(true);
+    try {
+      const result = await generatePromptsForIdea(idea.id);
+      alert(
+        `${result.message}\n\n` +
+        `Generated ${result.num_music_prompts} music prompts and ${result.num_visual_prompts} visual prompts.\n` +
+        `YouTube metadata: ${result.metadata_generated ? 'Yes' : 'No'}`
+      );
+      loadIdea(); // Reload to show new prompts
+    } catch (err: any) {
+      alert(`Failed to generate prompts: ${err.message}`);
+    } finally {
+      setIsGenerating(false);
     }
   }
 
@@ -396,14 +415,26 @@ export default function IdeaDetailPage({ params }: Props) {
                 >
                   Create Video from This Idea
                 </Link>
-                {!idea.prompts && (
-                  <button
-                    onClick={() => alert('Prompt generation coming soon!')}
-                    className="block w-full px-4 py-2 bg-purple-600 text-white text-center rounded-lg hover:bg-purple-700 transition"
-                  >
-                    Generate AI Prompts
-                  </button>
-                )}
+                <button
+                  onClick={handleGeneratePrompts}
+                  disabled={isGenerating}
+                  className={`block w-full px-4 py-2 text-white text-center rounded-lg transition ${
+                    isGenerating
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                >
+                  {isGenerating ? (
+                    <span className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Generating...</span>
+                    </span>
+                  ) : idea.prompts ? (
+                    'Regenerate AI Prompts'
+                  ) : (
+                    'Generate AI Prompts'
+                  )}
+                </button>
               </div>
             </div>
           </div>
