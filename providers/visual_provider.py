@@ -5,6 +5,8 @@ from pathlib import Path
 import os
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
+import requests
+import time
 
 
 class VisualProvider(ABC):
@@ -207,14 +209,249 @@ class DummyVisualProvider(VisualProvider):
         return luminance > 0.5
 
 
+class FluxVisualProvider(VisualProvider):
+    """
+    Flux implementation using Replicate API.
+
+    Generates high-quality 16:9 images using Flux models (Schnell, Dev, or Pro).
+    Requires REPLICATE_API_KEY environment variable.
+
+    Supported models:
+    - flux-schnell: Fastest, good quality (default)
+    - flux-dev: Better quality, slower
+    - flux-pro: Best quality, most expensive
+    """
+
+    def __init__(self):
+        """Initialize Flux provider with API credentials."""
+        self.api_key = os.getenv("REPLICATE_API_KEY")
+        if not self.api_key:
+            raise ValueError(
+                "REPLICATE_API_KEY environment variable must be set to use Flux provider"
+            )
+
+        # Model selection from environment (default: flux-schnell)
+        model_name = os.getenv("FLUX_MODEL", "flux-schnell").lower()
+
+        # Map model names to Replicate model identifiers
+        self.models = {
+            "flux-schnell": "black-forest-labs/flux-schnell",
+            "flux-dev": "black-forest-labs/flux-dev",
+            "flux-pro": "black-forest-labs/flux-pro"
+        }
+
+        if model_name not in self.models:
+            raise ValueError(
+                f"Unknown Flux model: {model_name}. "
+                f"Supported: {', '.join(self.models.keys())}"
+            )
+
+        self.model = self.models[model_name]
+        self.model_name = model_name
+
+        # Image settings for 16:9 aspect ratio
+        self.width = 1920
+        self.height = 1080
+        self.aspect_ratio = "16:9"
+
+        # API endpoints
+        self.api_base = "https://api.replicate.com/v1"
+
+    def generate_visual(
+        self,
+        prompt: str,
+        order_index: int,
+        output_dir: Path
+    ) -> Dict[str, Any]:
+        """
+        Generate a 16:9 image using Flux via Replicate API.
+
+        Creates a prediction, waits for completion, and downloads the result.
+        """
+        # Ensure output directory exists
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Enhance prompt for better visual quality
+        enhanced_prompt = self._enhance_prompt(prompt)
+
+        # Create prediction
+        prediction_id = self._create_prediction(enhanced_prompt)
+
+        # Wait for prediction to complete
+        image_url = self._wait_for_prediction(prediction_id)
+
+        # Download image
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"visual_{order_index:02d}_{timestamp}.png"
+        file_path = output_dir / filename
+
+        self._download_image(image_url, file_path)
+
+        # Return metadata
+        return {
+            "file_path": str(file_path.absolute()),
+            "order_index": order_index,
+            "prompt_text": prompt,
+            "width": self.width,
+            "height": self.height,
+            "format": "png",
+            "metadata": {
+                "provider": "flux",
+                "model": self.model_name,
+                "aspect_ratio": self.aspect_ratio,
+                "enhanced_prompt": enhanced_prompt,
+                "generated_at": datetime.now().isoformat(),
+                "replicate_url": image_url,
+            }
+        }
+
+    def _enhance_prompt(self, prompt: str) -> str:
+        """
+        Enhance the prompt for better visual quality.
+        Adds technical specifications for 16:9 background images.
+        """
+        enhancements = [
+            "high quality",
+            "professional",
+            "16:9 aspect ratio",
+            "cinematic composition",
+            "suitable for YouTube background"
+        ]
+
+        # Add enhancements if not already in prompt
+        enhanced = prompt
+        for enhancement in enhancements:
+            if enhancement.lower() not in prompt.lower():
+                enhanced += f", {enhancement}"
+
+        return enhanced
+
+    def _create_prediction(self, prompt: str) -> str:
+        """Create a prediction on Replicate and return the prediction ID."""
+        url = f"{self.api_base}/predictions"
+
+        headers = {
+            "Authorization": f"Token {self.api_key}",
+            "Content-Type": "application/json"
+        }
+
+        # Prepare input based on model
+        input_data = {
+            "prompt": prompt,
+            "aspect_ratio": self.aspect_ratio,
+            "output_format": "png",
+            "output_quality": 100
+        }
+
+        # Model-specific parameters
+        if self.model_name == "flux-schnell":
+            input_data["num_inference_steps"] = 4  # Fast generation
+        elif self.model_name == "flux-dev":
+            input_data["num_inference_steps"] = 28  # Better quality
+            input_data["guidance_scale"] = 3.5
+
+        payload = {
+            "version": self._get_model_version(),
+            "input": input_data
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+
+        result = response.json()
+        return result["id"]
+
+    def _get_model_version(self) -> str:
+        """
+        Get the latest model version hash for the selected Flux model.
+        These are the model version hashes as of Nov 2025.
+        """
+        versions = {
+            "flux-schnell": "f2ab8a5569279635b0c2d0c3c8e5f46359b64c73",  # Latest schnell
+            "flux-dev": "3ccbfee52b98c0c9a0bb62f33c5f3b5c8e05f06d",      # Latest dev
+            "flux-pro": "3ccbfee52b98c0c9a0bb62f33c5f3b5c8e05f06d"       # Latest pro
+        }
+        return versions.get(self.model_name, versions["flux-schnell"])
+
+    def _wait_for_prediction(self, prediction_id: str, max_wait: int = 180) -> str:
+        """
+        Poll the prediction until it completes or fails.
+
+        Args:
+            prediction_id: The prediction ID to wait for
+            max_wait: Maximum time to wait in seconds (default: 3 minutes)
+
+        Returns:
+            str: URL of the generated image
+
+        Raises:
+            RuntimeError: If prediction fails or times out
+        """
+        url = f"{self.api_base}/predictions/{prediction_id}"
+        headers = {"Authorization": f"Token {self.api_key}"}
+
+        start_time = time.time()
+
+        while True:
+            # Check if we've exceeded max wait time
+            if time.time() - start_time > max_wait:
+                raise RuntimeError(
+                    f"Prediction timed out after {max_wait} seconds. "
+                    f"Model: {self.model_name}"
+                )
+
+            # Get prediction status
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+
+            prediction = response.json()
+            status = prediction["status"]
+
+            if status == "succeeded":
+                # Return the image URL (output is a list with one URL)
+                output = prediction.get("output")
+                if isinstance(output, list) and output:
+                    return output[0]
+                elif isinstance(output, str):
+                    return output
+                else:
+                    raise RuntimeError(f"Unexpected output format: {output}")
+
+            elif status == "failed":
+                error = prediction.get("error", "Unknown error")
+                raise RuntimeError(f"Flux prediction failed: {error}")
+
+            elif status == "canceled":
+                raise RuntimeError("Flux prediction was canceled")
+
+            # Status is "starting" or "processing" - wait and retry
+            time.sleep(2)
+
+    def _download_image(self, url: str, file_path: Path) -> None:
+        """Download image from URL to local file."""
+        response = requests.get(url)
+        response.raise_for_status()
+
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+
+        # Verify it's a valid image
+        try:
+            img = Image.open(file_path)
+            img.verify()
+        except Exception as e:
+            raise RuntimeError(f"Downloaded file is not a valid image: {e}")
+
+
 def get_visual_provider() -> VisualProvider:
     """
     Factory function to get the configured visual provider.
 
     Reads VISUAL_PROVIDER environment variable to determine which
     provider to instantiate. Currently supports:
-    - "dummy": DummyVisualProvider (colored PNG images)
-    - "leonardo": (Future) Leonardo.ai API integration (video loops/images)
+    - "dummy": DummyVisualProvider (colored PNG images for development)
+    - "flux": FluxVisualProvider (Flux via Replicate API - high quality 16:9 images)
     - "gemini": (Future) Google Gemini API integration
 
     Returns:
@@ -227,14 +464,13 @@ def get_visual_provider() -> VisualProvider:
 
     if provider_name == "dummy":
         return DummyVisualProvider()
-    elif provider_name == "leonardo":
-        # Future implementation
-        raise NotImplementedError("Leonardo provider not yet implemented")
+    elif provider_name == "flux":
+        return FluxVisualProvider()
     elif provider_name == "gemini":
         # Future implementation
         raise NotImplementedError("Gemini provider not yet implemented")
     else:
         raise ValueError(
             f"Unknown visual provider: {provider_name}. "
-            f"Supported: dummy, leonardo, gemini"
+            f"Supported: dummy, flux, gemini"
         )
