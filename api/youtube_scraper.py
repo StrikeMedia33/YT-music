@@ -91,12 +91,9 @@ def list_scraped_channels(
     service = YouTubeIngestionService(db)
     channels = service.get_scraped_channels(limit=limit, offset=skip, status=status)
 
-    # Convert to dict and add video_count_scraped
+    # Convert to dict (video_count_scraped already included)
     return [
-        ScrapedChannelResponse(
-            **channel.to_dict(),
-            video_count_scraped=channel.scraped_videos.count()
-        )
+        ScrapedChannelResponse(**channel.to_dict())
         for channel in channels
     ]
 
@@ -115,10 +112,7 @@ def get_scraped_channel(
     if not channel:
         raise HTTPException(status_code=404, detail="Scraped channel not found")
 
-    return ScrapedChannelResponse(
-        **channel.to_dict(),
-        video_count_scraped=channel.scraped_videos.count()
-    )
+    return ScrapedChannelResponse(**channel.to_dict())
 
 
 @router.delete("/channels/{channel_id}", status_code=204)
@@ -188,3 +182,60 @@ def get_channel_analysis(
 
     stats = service.get_video_analysis_stats(channel_id)
     return VideoAnalysisStatsResponse(**stats)
+
+
+@router.post("/refresh-all")
+def refresh_all_channels(
+    background_tasks: BackgroundTasks,
+    video_limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """
+    Manually trigger a re-scrape of all channels to check for new videos.
+
+    This endpoint runs the re-scrape in the background and returns immediately.
+    Use the /refresh-status endpoint to check progress.
+
+    Query parameters:
+    - video_limit: Number of videos to fetch per channel (default: 50, max: 50)
+    """
+    from services.channel_update_scheduler import channel_scheduler
+
+    # Check if already running
+    status = channel_scheduler.get_status()
+    if status['is_running']:
+        raise HTTPException(
+            status_code=409,
+            detail="Channel refresh is already in progress"
+        )
+
+    # Run in background
+    def run_refresh():
+        from models import get_db
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
+            channel_scheduler.rescrape_all_channels(db, video_limit=video_limit)
+        finally:
+            db.close()
+
+    background_tasks.add_task(run_refresh)
+
+    return {
+        "success": True,
+        "message": "Channel refresh started in background",
+        "status": "running"
+    }
+
+
+@router.get("/refresh-status")
+def get_refresh_status():
+    """
+    Get the current status of the channel refresh operation.
+
+    Returns:
+    - is_running: Whether a refresh is currently in progress
+    - last_run: ISO timestamp of the last completed refresh (if any)
+    """
+    from services.channel_update_scheduler import channel_scheduler
+    return channel_scheduler.get_status()
