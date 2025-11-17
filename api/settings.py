@@ -21,7 +21,7 @@ class ProviderStatus(BaseModel):
 
 class ProviderSettings(BaseModel):
     """Provider settings configuration"""
-    music_provider: Optional[Literal["mubert", "beatoven", "suno"]] = None
+    music_provider: Optional[Literal["mubert", "beatoven", "manual"]] = None
     visual_provider: Optional[Literal["leonardo", "gemini", "replicate"]] = None
 
 
@@ -45,10 +45,10 @@ MUSIC_PROVIDERS = {
         "description": "Mood-based AI music generation",
         "env_key": "BEATOVEN_API_KEY"
     },
-    "suno": {
-        "name": "Suno",
-        "description": "Text-to-music AI generation",
-        "env_key": "SUNO_API_KEY"
+    "manual": {
+        "name": "Manual Upload",
+        "description": "Upload music tracks manually (e.g., from Suno or other sources)",
+        "env_key": None  # No API key needed for manual uploads
     }
 }
 
@@ -71,8 +71,11 @@ VISUAL_PROVIDERS = {
 }
 
 
-def check_provider_connection(env_key: str) -> bool:
+def check_provider_connection(env_key: Optional[str]) -> bool:
     """Check if provider has API key configured"""
+    # Manual upload doesn't require an API key
+    if env_key is None:
+        return True
     api_key = os.getenv(env_key)
     return api_key is not None and api_key.strip() != ""
 
@@ -143,7 +146,8 @@ async def update_provider_settings(settings: ProviderSettings):
             raise HTTPException(status_code=400, detail=f"Invalid music provider: {settings.music_provider}")
 
         provider_info = MUSIC_PROVIDERS[settings.music_provider]
-        if not check_provider_connection(provider_info["env_key"]):
+        # Skip API key check for manual uploads
+        if provider_info["env_key"] is not None and not check_provider_connection(provider_info["env_key"]):
             raise HTTPException(
                 status_code=400,
                 detail=f"{provider_info['name']} is not connected. Please add {provider_info['env_key']} to your .env file"

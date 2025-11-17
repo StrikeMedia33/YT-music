@@ -55,6 +55,11 @@ output/*
 *.wav
 *.mp3
 
+# Media files (uploaded music, generated images, rendered videos)
+media/
+media/*
+!media/.gitkeep
+
 # Next.js
 .next/
 node_modules/

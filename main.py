@@ -2,18 +2,25 @@
 import threading
 import time
 import logging
+import traceback
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from api.channels import router as channels_router
 from api.video_jobs import router as video_jobs_router
 from api.genres import router as genres_router
 from api.ideas import router as ideas_router
 from api.youtube_scraper import router as youtube_scraper_router
 from api.settings import router as settings_router
+from api.uploads import router as uploads_router
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging with detailed format
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 # Background scheduler for channel updates
@@ -52,7 +59,7 @@ def run_hourly_channel_refresh():
                 db.close()
 
         except Exception as e:
-            logger.error(f"Error in hourly refresh: {e}")
+            logger.error(f"Error in hourly refresh: {e}", exc_info=True)
 
 
 @asynccontextmanager
@@ -77,7 +84,7 @@ async def lifespan(app: FastAPI):
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"Error during startup channel refresh: {e}")
+        logger.error(f"Error during startup channel refresh: {e}", exc_info=True)
 
     # Start the hourly refresh thread
     scheduler_thread = threading.Thread(target=run_hourly_channel_refresh, daemon=True)
@@ -101,6 +108,25 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Global exception handler to log all errors with full stack traces
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Catch all unhandled exceptions and log them with full stack traces
+    """
+    logger.error(
+        f"Unhandled exception on {request.method} {request.url.path}: {exc}",
+        exc_info=True
+    )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "Internal server error",
+            "error": str(exc),
+            "path": str(request.url.path)
+        }
+    )
+
 # CORS - Allow both common dev ports
 app.add_middleware(
     CORSMiddleware,
@@ -117,6 +143,7 @@ app.include_router(genres_router, prefix="/api/genres", tags=["genres"])
 app.include_router(ideas_router, prefix="/api/ideas", tags=["ideas"])
 app.include_router(youtube_scraper_router, prefix="/api/youtube-scraper", tags=["youtube-scraper"])
 app.include_router(settings_router, prefix="/api/settings", tags=["settings"])
+app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
 
 @app.get("/api/health")
 def health_check():
