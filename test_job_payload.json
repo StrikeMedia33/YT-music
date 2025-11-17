@@ -1,0 +1,8 @@
+{
+  "channel_id": "c36cc0f5-a320-4f9f-9529-053759d8bfff",
+  "niche_label": "Baroque Classical via API",
+  "mood_keywords": "elegant, calm, romantic",
+  "target_duration_minutes": 75,
+  "output_directory": "./output/test_api",
+  "idea_id": "2bf828ee-11e9-44ca-a5bf-8060f8047033"
+}
