@@ -89,7 +89,7 @@ export function PromptsEditor({
           <div className="flex items-center space-x-2">
             {!isEditing ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setIsEditing(true)}
               >

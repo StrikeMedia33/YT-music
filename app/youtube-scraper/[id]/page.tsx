@@ -20,10 +20,11 @@ import {
 } from '@/lib/api';
 import { Loading, useToast } from '@/components/ui';
 
-export default function ChannelAnalysisPage({ params }: { params: { id: string } }) {
+export default function ChannelAnalysisPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const toast = useToast();
-  const channelId = parseInt(params.id);
+  const unwrappedParams = React.use(params);
+  const channelId = parseInt(unwrappedParams.id);
 
   const [channel, setChannel] = useState<ScrapedChannel | null>(null);
   const [videos, setVideos] = useState<ScrapedVideo[]>([]);

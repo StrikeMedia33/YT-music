@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 Generate professional AI-powered background music videos in minutes.
                 Perfect for YouTube channels focused on ambient, lo-fi, and study music.
               </p>
-              <Link href="/video-jobs/create">
+              <Link href="/video-jobs">
                 <Button size="lg" className="shadow-lg">
                   <FiPlus className="mr-2 w-5 h-5" />
                   Create Your First Video

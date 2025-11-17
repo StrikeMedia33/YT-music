@@ -199,7 +199,7 @@ export function PipelineControls({
                   </motion.div>
                 ) : (
                   <Button
-                    variant={available ? 'default' : 'ghost'}
+                    variant={available ? 'primary' : 'ghost'}
                     size="sm"
                     onClick={() => handleTrigger(step.id)}
                     disabled={!available || disabled || isLoading}
@@ -244,7 +244,7 @@ export function PipelineControls({
         </h3>
         <div className="flex flex-wrap gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={
               disabled ||
@@ -257,7 +257,7 @@ export function PipelineControls({
             Restart from Beginning
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={
               disabled ||

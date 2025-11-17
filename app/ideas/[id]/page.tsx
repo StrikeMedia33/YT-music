@@ -24,11 +24,14 @@ import { getIdea, deleteIdea, cloneIdea, updateIdea, generatePromptsForIdea } fr
 import type { VideoIdeaDetail, VideoIdeaUpdate } from '@/lib/api';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function IdeaDetailPage({ params }: Props) {
   const router = useRouter();
+  const unwrappedParams = React.use(params);
+  const ideaId = unwrappedParams.id;
+
   const [idea, setIdea] = useState<VideoIdeaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +41,13 @@ export default function IdeaDetailPage({ params }: Props) {
 
   useEffect(() => {
     loadIdea();
-  }, [params.id]);
+  }, [ideaId]);
 
   async function loadIdea() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getIdea(params.id);
+      const data = await getIdea(ideaId);
       setIdea(data);
       setEditData({
         title: data.title,

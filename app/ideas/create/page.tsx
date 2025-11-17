@@ -86,10 +86,10 @@ export default function CreateIdeaPage() {
     formData.title.trim() &&
     formData.genre_id &&
     formData.niche_label.trim() &&
-    formData.target_duration_minutes >= 60 &&
-    formData.target_duration_minutes <= 120 &&
-    formData.num_tracks >= 10 &&
-    formData.num_tracks <= 30;
+    (formData.target_duration_minutes ?? 0) >= 60 &&
+    (formData.target_duration_minutes ?? 0) <= 120 &&
+    (formData.num_tracks ?? 0) >= 10 &&
+    (formData.num_tracks ?? 0) <= 30;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

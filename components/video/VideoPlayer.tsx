@@ -191,7 +191,7 @@ export function VideoPlayer({
             <FiDownload className="w-4 h-4 mr-2" />
             Download Video
           </Button>
-          <Button variant="outline" onClick={copyPath}>
+          <Button variant="secondary" onClick={copyPath}>
             {copied ? (
               <>
                 <FiCheckCircle className="w-4 h-4 mr-2 text-green-600" />
@@ -204,7 +204,7 @@ export function VideoPlayer({
               </>
             )}
           </Button>
-          <Button variant="outline" disabled>
+          <Button variant="secondary" disabled>
             <FiExternalLink className="w-4 h-4 mr-2" />
             Upload to YouTube
             <span className="ml-2 text-xs bg-gray-200 px-2 py-0.5 rounded">

@@ -12,11 +12,13 @@ import {
   listVideoJobs,
   createVideoJob,
   listChannels,
+  listIdeas,
   type VideoJob,
   type VideoJobCreate,
   type Channel,
+  type VideoIdea,
 } from '@/lib/api';
-import { FiPlus, FiVideo } from 'react-icons/fi';
+import { FiPlus, FiVideo, FiZap } from 'react-icons/fi';
 import { Button, Loading, ErrorMessage, StatusBadge, useToast } from '@/components/ui';
 import { useUIStore } from '@/lib/store/ui-store';
 import Link from 'next/link';
@@ -27,6 +29,7 @@ export default function VideoJobsPage() {
   const toast = useToast();
   const [jobs, setJobs] = useState<VideoJob[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [ideas, setIdeas] = useState<VideoIdea[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -39,8 +42,13 @@ export default function VideoJobsPage() {
   // Form state
   const [formData, setFormData] = useState<VideoJobCreate>({
     channel_id: '',
+    niche_label: '',
+    mood_keywords: '',
     target_duration_minutes: 70,
+    output_directory: './output',
+    idea_id: undefined,
   });
+  const [selectedIdea, setSelectedIdea] = useState<VideoIdea | null>(null);
 
   // Load jobs and channels on mount
   useEffect(() => {
@@ -51,12 +59,14 @@ export default function VideoJobsPage() {
     try {
       setLoading(true);
       setError(null);
-      const [jobsData, channelsData] = await Promise.all([
+      const [jobsData, channelsData, ideasData] = await Promise.all([
         listVideoJobs(),
         listChannels(),
+        listIdeas({ is_archived: false, limit: 100 }),
       ]);
       setJobs(jobsData);
       setChannels(channelsData);
+      setIdeas(ideasData);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
     } finally {
@@ -75,8 +85,13 @@ export default function VideoJobsPage() {
       // Reset form and reload jobs
       setFormData({
         channel_id: '',
+        niche_label: '',
+        mood_keywords: '',
         target_duration_minutes: 70,
+        output_directory: './output',
+        idea_id: undefined,
       });
+      setSelectedIdea(null);
       setShowCreateForm(false);
       await loadData();
 
@@ -93,6 +108,32 @@ export default function VideoJobsPage() {
       toast.error('Failed to create video job', err.message);
     } finally {
       setCreating(false);
+    }
+  }
+
+  function handleIdeaSelection(ideaId: string) {
+    if (!ideaId) {
+      // Clear idea selection
+      setSelectedIdea(null);
+      setFormData({
+        ...formData,
+        idea_id: undefined,
+        niche_label: '',
+        mood_keywords: '',
+      });
+      return;
+    }
+
+    const idea = ideas.find(i => i.id === ideaId);
+    if (idea) {
+      setSelectedIdea(idea);
+      setFormData({
+        ...formData,
+        idea_id: idea.id,
+        niche_label: idea.niche_label,
+        mood_keywords: idea.mood_tags.join(', '),
+        target_duration_minutes: idea.target_duration_minutes,
+      });
     }
   }
 
@@ -154,6 +195,37 @@ export default function VideoJobsPage() {
               Create New Video Job
             </h2>
             <form onSubmit={handleCreateJob}>
+              {/* Idea Selection (Optional) */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <FiZap className="text-blue-600 w-5 h-5" />
+                  <label className="text-sm font-medium text-gray-900">
+                    Use Idea Template (Optional)
+                  </label>
+                </div>
+                <select
+                  value={selectedIdea?.id || ''}
+                  onChange={(e) => handleIdeaSelection(e.target.value)}
+                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                >
+                  <option value="">Create from scratch...</option>
+                  {ideas.map((idea) => (
+                    <option key={idea.id} value={idea.id}>
+                      {idea.title} ({idea.niche_label})
+                    </option>
+                  ))}
+                </select>
+                {selectedIdea && (
+                  <p className="mt-2 text-sm text-blue-700">
+                    Using template: <strong>{selectedIdea.title}</strong>
+                    <br />
+                    <span className="text-xs">
+                      Niche and mood keywords will be pre-filled. You can customize them below.
+                    </span>
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label
@@ -184,6 +256,50 @@ export default function VideoJobsPage() {
 
                 <div>
                   <label
+                    htmlFor="niche_label"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Niche Label
+                  </label>
+                  <input
+                    type="text"
+                    id="niche_label"
+                    required
+                    maxLength={255}
+                    value={formData.niche_label}
+                    onChange={(e) =>
+                      setFormData({ ...formData, niche_label: e.target.value })
+                    }
+                    placeholder="e.g., Baroque Classical, Urban Lo-fi"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="mood_keywords"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Mood Keywords
+                  </label>
+                  <input
+                    type="text"
+                    id="mood_keywords"
+                    required
+                    value={formData.mood_keywords}
+                    onChange={(e) =>
+                      setFormData({ ...formData, mood_keywords: e.target.value })
+                    }
+                    placeholder="e.g., relaxing, focused, ambient, peaceful"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Comma-separated keywords describing the mood and style
+                  </p>
+                </div>
+
+                <div>
+                  <label
                     htmlFor="target_duration_minutes"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
@@ -206,6 +322,29 @@ export default function VideoJobsPage() {
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     60-120 minutes (20 tracks × 3-6 mins each)
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="output_directory"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Output Directory
+                  </label>
+                  <input
+                    type="text"
+                    id="output_directory"
+                    required
+                    value={formData.output_directory}
+                    onChange={(e) =>
+                      setFormData({ ...formData, output_directory: e.target.value })
+                    }
+                    placeholder="./output"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Local directory for generated files
                   </p>
                 </div>
               </div>

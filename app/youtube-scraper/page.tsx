@@ -176,10 +176,15 @@ export default function YouTubeScraperPage() {
 
   function formatDate(dateStr?: string) {
     if (!dateStr) return 'Never';
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Asia/Bangkok', // ICT (UTC+7)
+      timeZoneName: 'short',
     });
   }
 
@@ -415,6 +420,15 @@ export default function YouTubeScraperPage() {
                         {formatDate(channel.last_scraped_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                        <a
+                          href={`https://www.youtube.com/channel/${channel.youtube_channel_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-900"
+                          title="Open on YouTube"
+                        >
+                          <FiYoutube className="w-4 h-4" />
+                        </a>
                         <Link
                           href={`/youtube-scraper/${channel.id}`}
                           className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-900"

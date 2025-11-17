@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { getVideoJob, type VideoJobDetail } from '@/lib/api';
+import { getVideoJob, cancelVideoJob, type VideoJobDetail } from '@/lib/api';
 import { Button, Loading, ErrorMessage, StatusBadge } from '@/components/ui';
 import { useJobProgress } from '@/lib/hooks/use-job-progress';
 import { ProgressTracker } from '@/components/progress/ProgressTracker';
@@ -21,11 +21,12 @@ export default function VideoJobDetailPage() {
   const [job, setJob] = useState<VideoJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [canceling, setCanceling] = useState(false);
 
   // Real-time progress tracking via SSE
   const shouldTrackProgress =
-    job &&
-    !['completed', 'failed', 'ready_for_export'].includes(job.status);
+    !!job &&
+    !['completed', 'failed', 'cancelled', 'ready_for_export'].includes(job.status);
 
   const { status, progress, message, isConnected } = useJobProgress({
     jobId,
@@ -59,6 +60,23 @@ export default function VideoJobDetailPage() {
       setError(err.message || 'Failed to load video job');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleCancelJob() {
+    if (!confirm('Are you sure you want to cancel this job? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setCanceling(true);
+      await cancelVideoJob(jobId);
+      // Reload job data to reflect cancelled status
+      await loadJob();
+    } catch (err: any) {
+      alert(err.message || 'Failed to cancel job');
+    } finally {
+      setCanceling(false);
     }
   }
 
@@ -105,7 +123,18 @@ export default function VideoJobDetailPage() {
             >
               ← Back to All Jobs
             </Button>
-            <StatusBadge status={job.status} />
+            <div className="flex items-center gap-3">
+              <StatusBadge status={job.status} />
+              {!['completed', 'failed', 'cancelled'].includes(job.status) && (
+                <Button
+                  variant="danger"
+                  onClick={handleCancelJob}
+                  disabled={canceling}
+                >
+                  {canceling ? 'Canceling...' : 'Cancel Job'}
+                </Button>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div>
@@ -126,7 +155,7 @@ export default function VideoJobDetailPage() {
         </motion.div>
 
         {/* Progress Tracker */}
-        {!['completed', 'failed'].includes(job.status) && (
+        {!['completed', 'failed', 'cancelled'].includes(job.status) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

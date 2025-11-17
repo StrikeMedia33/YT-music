@@ -83,7 +83,7 @@ export function MetadataEditor({
           <div className="flex items-center space-x-2">
             {!isEditing ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setIsEditing(true)}
               >
@@ -192,7 +192,7 @@ export function MetadataEditor({
                 placeholder="Add a tag..."
               />
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={addTag}
                 disabled={!newTag.trim()}
