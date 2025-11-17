@@ -37,6 +37,12 @@ requests>=2.31.0  # HTTP library for API calls
 httpx>=0.25.0  # Async HTTP client (used by FastAPI)
 
 # ============================================================================
+# YOUTUBE SCRAPING
+# ============================================================================
+feedparser>=6.0.10  # RSS feed parsing for YouTube channels
+yt-dlp>=2023.11.16  # YouTube video metadata extraction
+
+# ============================================================================
 # MEDIA PROCESSING
 # ============================================================================
 pillow>=10.1.0  # Image manipulation (for dummy visual provider)

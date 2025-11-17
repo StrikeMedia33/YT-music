@@ -12,6 +12,15 @@ from .idea import (
     VideoIdeaSearchParams,
 )
 from .idea_prompt import IdeaPromptCreate, IdeaPromptUpdate, IdeaPromptResponse
+from .youtube_scraper import (
+    ChannelDiscoverRequest,
+    ChannelDiscoverResponse,
+    ChannelScrapeRequest,
+    ChannelScrapeResponse,
+    ScrapedVideoResponse,
+    ScrapedChannelResponse,
+    VideoAnalysisStatsResponse,
+)
 
 __all__ = [
     # Channel schemas
@@ -40,4 +49,12 @@ __all__ = [
     "IdeaPromptCreate",
     "IdeaPromptUpdate",
     "IdeaPromptResponse",
+    # YouTube Scraper schemas
+    "ChannelDiscoverRequest",
+    "ChannelDiscoverResponse",
+    "ChannelScrapeRequest",
+    "ChannelScrapeResponse",
+    "ScrapedVideoResponse",
+    "ScrapedChannelResponse",
+    "VideoAnalysisStatsResponse",
 ]

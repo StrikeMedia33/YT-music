@@ -17,7 +17,8 @@ import {
   FiBarChart2,
   FiMenu,
   FiX,
-  FiLightbulb,
+  FiZap,
+  FiYoutube,
 } from 'react-icons/fi';
 import { useUIStore } from '@/lib/store/ui-store';
 import clsx from 'clsx';
@@ -37,7 +38,7 @@ const navItems: NavItem[] = [
   {
     label: 'Ideas Library',
     href: '/ideas',
-    icon: <FiLightbulb className="w-5 h-5" />,
+    icon: <FiZap className="w-5 h-5" />,
   },
   {
     label: 'Video Jobs',
@@ -48,6 +49,11 @@ const navItems: NavItem[] = [
     label: 'Channels',
     href: '/channels',
     icon: <FiList className="w-5 h-5" />,
+  },
+  {
+    label: 'YouTube Analyzer',
+    href: '/youtube-scraper',
+    icon: <FiYoutube className="w-5 h-5" />,
   },
   {
     label: 'Analytics',
