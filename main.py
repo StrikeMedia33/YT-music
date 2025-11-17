@@ -1,4 +1,8 @@
 """FastAPI Application Entry Point"""
+import threading
+import time
+import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.channels import router as channels_router
@@ -8,10 +12,93 @@ from api.ideas import router as ideas_router
 from api.youtube_scraper import router as youtube_scraper_router
 from api.settings import router as settings_router
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Background scheduler for channel updates
+scheduler_thread = None
+should_stop = threading.Event()
+
+
+def run_hourly_channel_refresh():
+    """
+    Background thread that checks for new videos every hour.
+    Runs continuously while the application is running.
+    """
+    from models import get_db
+    from services.channel_update_scheduler import channel_scheduler
+
+    logger.info("Hourly channel refresh thread started")
+
+    while not should_stop.is_set():
+        try:
+            # Wait for 1 hour (3600 seconds), but check every second if we should stop
+            for _ in range(3600):
+                if should_stop.is_set():
+                    logger.info("Stopping hourly refresh thread")
+                    return
+                time.sleep(1)
+
+            # Run the refresh
+            logger.info("Running scheduled hourly channel refresh...")
+            db_gen = get_db()
+            db = next(db_gen)
+            try:
+                result = channel_scheduler.rescrape_all_channels(db, video_limit=50)
+                logger.info(f"Hourly refresh completed: {result['channels_updated']} channels updated, "
+                           f"{result['new_videos_found']} new videos found")
+            finally:
+                db.close()
+
+        except Exception as e:
+            logger.error(f"Error in hourly refresh: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for startup and shutdown events.
+    """
+    global scheduler_thread
+
+    # Startup: Check for new videos on application start
+    logger.info("Application starting up - checking for new videos...")
+    try:
+        from models import get_db
+        from services.channel_update_scheduler import channel_scheduler
+
+        db_gen = get_db()
+        db = next(db_gen)
+        try:
+            result = channel_scheduler.rescrape_all_channels(db, video_limit=50)
+            logger.info(f"Startup refresh completed: {result['channels_updated']} channels updated, "
+                       f"{result['new_videos_found']} new videos found")
+        finally:
+            db.close()
+    except Exception as e:
+        logger.error(f"Error during startup channel refresh: {e}")
+
+    # Start the hourly refresh thread
+    scheduler_thread = threading.Thread(target=run_hourly_channel_refresh, daemon=True)
+    scheduler_thread.start()
+    logger.info("Hourly channel refresh thread started")
+
+    yield  # Application runs here
+
+    # Shutdown: Stop the background thread
+    logger.info("Application shutting down...")
+    should_stop.set()
+    if scheduler_thread and scheduler_thread.is_alive():
+        scheduler_thread.join(timeout=5)
+    logger.info("Background threads stopped")
+
+
 app = FastAPI(
     title="AI Background Channel Studio API",
     description="API for automated YouTube background video generation",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS - Allow both common dev ports
