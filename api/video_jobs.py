@@ -82,3 +82,26 @@ def update_video_job(job_id: str, job_update: VideoJobUpdate, db: Session = Depe
     db.commit()
     db.refresh(job)
     return job
+
+@router.post("/{job_id}/cancel", response_model=VideoJobResponse)
+def cancel_video_job(job_id: str, db: Session = Depends(get_db)):
+    """Cancel a video job by setting its status to CANCELLED"""
+    from models import VideoJobStatus
+
+    job = db.query(VideoJob).filter(VideoJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Video job not found")
+
+    # Don't allow canceling already completed or failed jobs
+    if job.status in [VideoJobStatus.COMPLETED, VideoJobStatus.FAILED, VideoJobStatus.CANCELLED]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel job with status '{job.status.value}'"
+        )
+
+    # Set status to cancelled
+    job.status = VideoJobStatus.CANCELLED
+    job.error_message = "Job cancelled by user"
+    db.commit()
+    db.refresh(job)
+    return job
