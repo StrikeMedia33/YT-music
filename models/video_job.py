@@ -23,6 +23,7 @@ class VideoJobStatus(str, enum.Enum):
     READY_FOR_EXPORT = "ready_for_export"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 class VideoJob(Base):
@@ -59,7 +60,7 @@ class VideoJob(Base):
 
     # Job Configuration
     status = Column(
-        Enum(VideoJobStatus, native_enum=False),
+        Enum(VideoJobStatus, native_enum=False, values_callable=lambda obj: [e.value for e in obj]),
         default=VideoJobStatus.PLANNED,
         nullable=False,
     )
@@ -144,6 +145,16 @@ class VideoJob(Base):
         }
 
         if include_relations:
+            # Include channel information
+            if self.channel:
+                data["channel"] = {
+                    "id": str(self.channel.id),
+                    "name": self.channel.name,
+                    "brand_niche": self.channel.brand_niche,
+                    "youtube_channel_id": self.channel.youtube_channel_id,
+                    "is_active": self.channel.is_active,
+                }
+
             data["audio_tracks"] = [track.to_dict() for track in self.audio_tracks]
             data["images"] = [img.to_dict() for img in self.images]
             data["render_tasks"] = [task.to_dict() for task in self.render_tasks]

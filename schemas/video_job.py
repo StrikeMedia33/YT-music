@@ -1,7 +1,8 @@
 """VideoJob Pydantic Schemas"""
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+from uuid import UUID
 from models import VideoJobStatus
 
 class VideoJobBase(BaseModel):
@@ -12,6 +13,7 @@ class VideoJobBase(BaseModel):
 
 class VideoJobCreate(VideoJobBase):
     channel_id: str
+    idea_id: Optional[str] = None  # Optional link to video idea template
 
 class VideoJobUpdate(BaseModel):
     status: Optional[VideoJobStatus] = None
@@ -20,8 +22,8 @@ class VideoJobUpdate(BaseModel):
     error_message: Optional[str] = None
 
 class VideoJobResponse(VideoJobBase):
-    id: str
-    channel_id: str
+    id: UUID
+    channel_id: UUID
     status: str
     prompts_json: Optional[Dict[str, Any]] = None
     local_video_path: Optional[str] = None
@@ -29,10 +31,15 @@ class VideoJobResponse(VideoJobBase):
     created_at: datetime
     updated_at: datetime
 
+    @field_serializer('id', 'channel_id')
+    def serialize_uuid(self, value: UUID) -> str:
+        return str(value)
+
     class Config:
         from_attributes = True
 
 class VideoJobDetail(VideoJobResponse):
+    channel: Optional[Dict[str, Any]] = None
     audio_tracks: List[Dict[str, Any]] = []
     images: List[Dict[str, Any]] = []
     render_tasks: List[Dict[str, Any]] = []
