@@ -14,6 +14,8 @@ import {
   discoverChannel,
   scrapeChannel,
   deleteScrapedChannel,
+  refreshAllChannels,
+  getRefreshStatus,
   type ScrapedChannel,
   type ChannelDiscoverResponse,
 } from '@/lib/api';
@@ -25,6 +27,8 @@ export default function YouTubeScraperPage() {
   const [loading, setLoading] = useState(true);
   const [discovering, setDiscovering] = useState(false);
   const [scraping, setScraping] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<{ is_running: boolean; last_run: string | null } | null>(null);
   const [discoveryResult, setDiscoveryResult] = useState<ChannelDiscoverResponse | null>(null);
 
   // Form state
@@ -34,7 +38,22 @@ export default function YouTubeScraperPage() {
 
   useEffect(() => {
     loadChannels();
+    checkRefreshStatus();
+
+    // Poll refresh status every 5 seconds
+    const interval = setInterval(checkRefreshStatus, 5000);
+    return () => clearInterval(interval);
   }, []);
+
+  async function checkRefreshStatus() {
+    try {
+      const status = await getRefreshStatus();
+      setRefreshStatus(status);
+      setRefreshing(status.is_running);
+    } catch (err) {
+      // Silently fail status checks
+    }
+  }
 
   async function loadChannels() {
     try {
@@ -118,6 +137,40 @@ export default function YouTubeScraperPage() {
       await loadChannels();
     } catch (err: any) {
       toast.error('Failed to delete channel', err.message);
+    }
+  }
+
+  async function handleRefreshAll() {
+    try {
+      setRefreshing(true);
+      const result = await refreshAllChannels(50);
+
+      if (result.success) {
+        toast.success('Refresh started', 'Checking all channels for new videos...');
+
+        // Start polling for status
+        const pollInterval = setInterval(async () => {
+          const status = await getRefreshStatus();
+          setRefreshStatus(status);
+
+          if (!status.is_running) {
+            clearInterval(pollInterval);
+            setRefreshing(false);
+            toast.success('Refresh complete', 'All channels have been updated');
+            await loadChannels();
+          }
+        }, 2000);
+      } else {
+        toast.error('Refresh failed', 'Could not start channel refresh');
+        setRefreshing(false);
+      }
+    } catch (err: any) {
+      if (err.message.includes('409')) {
+        toast.info('Already running', 'Channel refresh is already in progress');
+      } else {
+        toast.error('Refresh failed', err.message);
+      }
+      setRefreshing(false);
     }
   }
 
@@ -289,10 +342,26 @@ export default function YouTubeScraperPage() {
 
         {/* Scraped Channels List */}
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Scraped Channels ({channels.length})
-            </h2>
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Scraped Channels ({channels.length})
+              </h2>
+              {refreshStatus?.last_run && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Last checked: {formatDate(refreshStatus.last_run)}
+                </p>
+              )}
+            </div>
+            <Button
+              onClick={handleRefreshAll}
+              loading={refreshing}
+              variant="secondary"
+              disabled={refreshing}
+            >
+              <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Checking for New Videos...' : 'Check for New Videos'}
+            </Button>
           </div>
 
           {channels.length === 0 ? (
