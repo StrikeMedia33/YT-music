@@ -10,11 +10,16 @@ import {
   listChannels,
   createChannel,
   toggleChannelActive,
+  listGenres,
+  listIdeas,
   type Channel,
   type ChannelCreate,
+  type GenreWithStats,
+  type VideoIdea,
 } from '@/lib/api';
 import { Button, Loading, ErrorMessage, useToast, SlidePanel, useSlidePanel } from '@/components/ui';
 import { ChannelDetailPanel } from '@/components/channels/ChannelDetailPanel';
+import { FiChevronDown, FiEdit3 } from 'react-icons/fi';
 
 export default function ChannelsPage() {
   const toast = useToast();
@@ -42,6 +47,13 @@ export default function ChannelsPage() {
     brand_niche?: string;
   }>({});
 
+  // Genre and niche selection state
+  const [genres, setGenres] = useState<GenreWithStats[]>([]);
+  const [ideas, setIdeas] = useState<VideoIdea[]>([]);
+  const [selectedGenreId, setSelectedGenreId] = useState<string | null>(null);
+  const [nicheInputMode, setNicheInputMode] = useState<'select' | 'custom'>('select');
+  const [loadingGenres, setLoadingGenres] = useState(false);
+
   // Load channels on mount
   useEffect(() => {
     loadChannels();
@@ -59,6 +71,45 @@ export default function ChannelsPage() {
       setLoading(false);
     }
   }
+
+  async function loadGenres() {
+    try {
+      setLoadingGenres(true);
+      const data = await listGenres({ with_stats: true });
+      setGenres(data);
+    } catch (err: any) {
+      console.error('Failed to load genres:', err);
+      toast.error('Failed to load genres', err.message);
+    } finally {
+      setLoadingGenres(false);
+    }
+  }
+
+  async function loadIdeasForGenre(genreId: string) {
+    try {
+      const data = await listIdeas({ genre_id: genreId, limit: 100 });
+      setIdeas(data);
+    } catch (err: any) {
+      console.error('Failed to load ideas:', err);
+      toast.error('Failed to load ideas', err.message);
+    }
+  }
+
+  // Load genres when create form is shown
+  useEffect(() => {
+    if (showCreateForm && genres.length === 0) {
+      loadGenres();
+    }
+  }, [showCreateForm]);
+
+  // Load ideas when genre is selected
+  useEffect(() => {
+    if (selectedGenreId) {
+      loadIdeasForGenre(selectedGenreId);
+    } else {
+      setIdeas([]);
+    }
+  }, [selectedGenreId]);
 
   function validateForm(): boolean {
     const errors: typeof formErrors = {};
@@ -104,6 +155,8 @@ export default function ChannelsPage() {
         is_active: true,
       });
       setFormErrors({});
+      setSelectedGenreId(null);
+      setNicheInputMode('select');
       setShowCreateForm(false);
       await loadChannels();
 
@@ -162,7 +215,21 @@ export default function ChannelsPage() {
         {/* Create Button */}
         <div className="mb-6">
           <Button
-            onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={() => {
+              if (showCreateForm) {
+                // Reset form when canceling
+                setFormData({
+                  name: '',
+                  youtube_channel_id: '',
+                  brand_niche: '',
+                  is_active: true,
+                });
+                setFormErrors({});
+                setSelectedGenreId(null);
+                setNicheInputMode('select');
+              }
+              setShowCreateForm(!showCreateForm);
+            }}
             variant={showCreateForm ? 'secondary' : 'primary'}
           >
             {showCreateForm ? 'Cancel' : '+ Create Channel'}
@@ -249,32 +316,106 @@ export default function ChannelsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label
-                    htmlFor="brand_niche"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Brand Niche <span className="text-red-600 dark:text-red-400" aria-label="required">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="brand_niche"
-                    required
-                    aria-required="true"
-                    aria-invalid={formErrors.brand_niche ? 'true' : 'false'}
-                    aria-describedby={formErrors.brand_niche ? 'brand_niche-error' : undefined}
-                    value={formData.brand_niche}
-                    onChange={(e) => {
-                      setFormData({ ...formData, brand_niche: e.target.value });
-                      // Clear error on change
-                      if (formErrors.brand_niche) {
-                        setFormErrors({ ...formErrors, brand_niche: undefined });
-                      }
-                    }}
-                    className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.brand_niche ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    placeholder="Ambient Electronic Music"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label
+                      htmlFor="brand_niche"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Brand Niche <span className="text-red-600 dark:text-red-400" aria-label="required">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setNicheInputMode(nicheInputMode === 'select' ? 'custom' : 'select')}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
+                    >
+                      <FiEdit3 className="w-3 h-3" />
+                      {nicheInputMode === 'select' ? 'Enter custom' : 'Select from library'}
+                    </button>
+                  </div>
+
+                  {nicheInputMode === 'select' ? (
+                    <>
+                      {/* Genre Selector */}
+                      <div className="mb-3">
+                        <label htmlFor="genre_select" className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                          1. Choose Genre
+                        </label>
+                        <select
+                          id="genre_select"
+                          value={selectedGenreId || ''}
+                          onChange={(e) => {
+                            setSelectedGenreId(e.target.value || null);
+                            // Clear niche when genre changes
+                            setFormData({ ...formData, brand_niche: '' });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Select a genre...</option>
+                          {genres.map((genre) => (
+                            <option key={genre.id} value={genre.id}>
+                              {genre.name} ({genre.active_idea_count} niches)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Niche Selector */}
+                      {selectedGenreId && (
+                        <div>
+                          <label htmlFor="niche_select" className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                            2. Choose Niche
+                          </label>
+                          <select
+                            id="niche_select"
+                            value={formData.brand_niche}
+                            onChange={(e) => {
+                              setFormData({ ...formData, brand_niche: e.target.value });
+                              // Clear error on change
+                              if (formErrors.brand_niche) {
+                                setFormErrors({ ...formErrors, brand_niche: undefined });
+                              }
+                            }}
+                            className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              formErrors.brand_niche ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                            }`}
+                          >
+                            <option value="">Select a niche...</option>
+                            {ideas.map((idea) => (
+                              <option key={idea.id} value={idea.niche_label}>
+                                {idea.niche_label}
+                              </option>
+                            ))}
+                          </select>
+                          {ideas.length > 0 && (
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {ideas.length} niches available in {genres.find(g => g.id === selectedGenreId)?.name}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <input
+                      type="text"
+                      id="brand_niche"
+                      required
+                      aria-required="true"
+                      aria-invalid={formErrors.brand_niche ? 'true' : 'false'}
+                      aria-describedby={formErrors.brand_niche ? 'brand_niche-error' : undefined}
+                      value={formData.brand_niche}
+                      onChange={(e) => {
+                        setFormData({ ...formData, brand_niche: e.target.value });
+                        // Clear error on change
+                        if (formErrors.brand_niche) {
+                          setFormErrors({ ...formErrors, brand_niche: undefined });
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        formErrors.brand_niche ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                      placeholder="e.g., Ambient Electronic Music, Lo-fi Study Beats"
+                    />
+                  )}
                   {formErrors.brand_niche && (
                     <p id="brand_niche-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                       {formErrors.brand_niche}
@@ -290,7 +431,18 @@ export default function ChannelsPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={() => {
+                    setFormData({
+                      name: '',
+                      youtube_channel_id: '',
+                      brand_niche: '',
+                      is_active: true,
+                    });
+                    setFormErrors({});
+                    setSelectedGenreId(null);
+                    setNicheInputMode('select');
+                    setShowCreateForm(false);
+                  }}
                 >
                   Cancel
                 </Button>

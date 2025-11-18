@@ -14,6 +14,7 @@ class VideoJobBase(BaseModel):
 class VideoJobCreate(VideoJobBase):
     channel_id: str
     idea_id: Optional[str] = None  # Optional link to video idea template
+    video_title: Optional[str] = None  # Optional title (can be auto-generated)
 
 class VideoJobUpdate(BaseModel):
     status: Optional[VideoJobStatus] = None
@@ -79,3 +80,57 @@ class VideoMetadataResponse(BaseModel):
     tags: List[str]
     niche_label: str
     mood_keywords: str
+
+
+# New Workflow Schemas for Enhanced Video Job Creation
+
+class GenerateTitleRequest(BaseModel):
+    """Request to generate a video title from channel and niche/mood"""
+    channel_id: str
+    niche_label: Optional[str] = None
+    mood_keywords: Optional[str] = None
+
+
+class GenerateTitleResponse(BaseModel):
+    """Response containing generated title and suggested output directory"""
+    title: str
+    output_directory: str
+
+
+class UpdatePromptsRequest(BaseModel):
+    """Request to update music and/or visual prompts"""
+    music_prompts: Optional[List[str]] = None  # Array of 20 prompts
+    visual_prompts: Optional[List[str]] = None  # Array of 20 prompts
+
+
+class RegeneratePromptRequest(BaseModel):
+    """Request to regenerate a specific prompt"""
+    prompt_type: str = Field(..., pattern="^(music|visual)$")
+    prompt_index: int = Field(..., ge=0, lt=20)
+
+
+class RegeneratePromptResponse(BaseModel):
+    """Response containing regenerated prompt"""
+    new_prompt: str
+    prompt_index: int
+    prompt_type: str
+
+
+# Asset Arrangement Schemas
+
+class AssetPair(BaseModel):
+    """Asset pair for arrangement"""
+    position: int = Field(..., ge=1, le=20)
+    audio_track_id: str
+    image_id: str
+
+
+class SaveArrangementRequest(BaseModel):
+    """Request to save asset arrangement"""
+    pairs: List[AssetPair] = Field(..., min_length=20, max_length=20)
+
+
+class SaveArrangementResponse(BaseModel):
+    """Response after saving arrangement"""
+    success: bool
+    total_duration_seconds: float

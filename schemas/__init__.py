@@ -1,6 +1,11 @@
 """Pydantic Schemas for API validation"""
 from .channel import ChannelCreate, ChannelUpdate, ChannelResponse
-from .video_job import VideoJobCreate, VideoJobUpdate, VideoJobResponse, VideoJobDetail
+from .video_job import (
+    VideoJobCreate, VideoJobUpdate, VideoJobResponse, VideoJobDetail,
+    GenerateTitleRequest, GenerateTitleResponse,
+    UpdatePromptsRequest, RegeneratePromptRequest, RegeneratePromptResponse,
+    AssetPair, SaveArrangementRequest, SaveArrangementResponse
+)
 from .genre import GenreCreate, GenreUpdate, GenreResponse, GenreWithStats
 from .idea import (
     VideoIdeaCreate,
@@ -32,6 +37,14 @@ __all__ = [
     "VideoJobUpdate",
     "VideoJobResponse",
     "VideoJobDetail",
+    "GenerateTitleRequest",
+    "GenerateTitleResponse",
+    "UpdatePromptsRequest",
+    "RegeneratePromptRequest",
+    "RegeneratePromptResponse",
+    "AssetPair",
+    "SaveArrangementRequest",
+    "SaveArrangementResponse",
     # Genre schemas
     "GenreCreate",
     "GenreUpdate",
