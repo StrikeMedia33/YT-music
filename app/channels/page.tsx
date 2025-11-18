@@ -13,7 +13,8 @@ import {
   type Channel,
   type ChannelCreate,
 } from '@/lib/api';
-import { Button, Loading, ErrorMessage, useToast } from '@/components/ui';
+import { Button, Loading, ErrorMessage, useToast, SlidePanel, useSlidePanel } from '@/components/ui';
+import { ChannelDetailPanel } from '@/components/channels/ChannelDetailPanel';
 
 export default function ChannelsPage() {
   const toast = useToast();
@@ -22,6 +23,9 @@ export default function ChannelsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  // Slide panel state
+  const channelPanel = useSlidePanel<string>();
 
   // Form state
   const [formData, setFormData] = useState<ChannelCreate>({
@@ -129,19 +133,19 @@ export default function ChannelsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex items-center justify-center">
         <Loading size="lg" message="Loading channels..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Channels</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Channels</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Manage your YouTube channels for automated video generation.
           </p>
         </div>
@@ -167,8 +171,8 @@ export default function ChannelsPage() {
 
         {/* Create Form */}
         {showCreateForm && (
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 transition-colors duration-200 shadow dark:shadow-gray-900/50 rounded-lg p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Create New Channel
             </h2>
             <form onSubmit={handleCreateChannel}>
@@ -176,9 +180,9 @@ export default function ChannelsPage() {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
-                    Channel Name <span className="text-red-600" aria-label="required">*</span>
+                    Channel Name <span className="text-red-600 dark:text-red-400" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -195,13 +199,13 @@ export default function ChannelsPage() {
                         setFormErrors({ ...formErrors, name: undefined });
                       }
                     }}
-                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.name ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="My Ambient Channel"
                   />
                   {formErrors.name && (
-                    <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
+                    <p id="name-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                       {formErrors.name}
                     </p>
                   )}
@@ -210,9 +214,9 @@ export default function ChannelsPage() {
                 <div>
                   <label
                     htmlFor="youtube_channel_id"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
-                    YouTube Channel ID <span className="text-red-600" aria-label="required">*</span>
+                    YouTube Channel ID <span className="text-red-600 dark:text-red-400" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -232,13 +236,13 @@ export default function ChannelsPage() {
                         setFormErrors({ ...formErrors, youtube_channel_id: undefined });
                       }
                     }}
-                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.youtube_channel_id ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.youtube_channel_id ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="UC..."
                   />
                   {formErrors.youtube_channel_id && (
-                    <p id="youtube_channel_id-error" className="mt-1 text-sm text-red-600" role="alert">
+                    <p id="youtube_channel_id-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                       {formErrors.youtube_channel_id}
                     </p>
                   )}
@@ -247,9 +251,9 @@ export default function ChannelsPage() {
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="brand_niche"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
-                    Brand Niche <span className="text-red-600" aria-label="required">*</span>
+                    Brand Niche <span className="text-red-600 dark:text-red-400" aria-label="required">*</span>
                   </label>
                   <input
                     type="text"
@@ -266,13 +270,13 @@ export default function ChannelsPage() {
                         setFormErrors({ ...formErrors, brand_niche: undefined });
                       }
                     }}
-                    className={`w-full px-3 py-2 border rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formErrors.brand_niche ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-lg transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      formErrors.brand_niche ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="Ambient Electronic Music"
                   />
                   {formErrors.brand_niche && (
-                    <p id="brand_niche-error" className="mt-1 text-sm text-red-600" role="alert">
+                    <p id="brand_niche-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                       {formErrors.brand_niche}
                     </p>
                   )}
@@ -296,53 +300,57 @@ export default function ChannelsPage() {
         )}
 
         {/* Channels Table */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 transition-colors duration-200 shadow dark:shadow-gray-900/50 rounded-lg overflow-hidden">
           {channels.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 No channels yet. Create your first channel to get started.
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       YouTube ID
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Niche
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 transition-colors duration-200 divide-y divide-gray-200 dark:divide-gray-700">
                   {channels.map((channel) => (
-                    <tr key={channel.id} className="hover:bg-gray-50">
+                    <tr
+                      key={channel.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => channelPanel.open(channel.id)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {channel.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {channel.youtube_channel_id}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-gray-100">
                           {channel.brand_niche}
                         </div>
                       </td>
@@ -350,23 +358,24 @@ export default function ChannelsPage() {
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             channel.is_active
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                           }`}
                         >
                           {channel.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(channel.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() =>
-                            handleToggleActive(channel.id, channel.is_active)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleActive(channel.id, channel.is_active);
+                          }}
                         >
                           {channel.is_active ? 'Disable' : 'Enable'}
                         </Button>
@@ -379,6 +388,25 @@ export default function ChannelsPage() {
           )}
         </div>
       </div>
+
+      {/* Slide-in Panel for Channel Details */}
+      <SlidePanel
+        isOpen={channelPanel.isOpen}
+        onClose={channelPanel.close}
+        title="Channel Details"
+        width="lg"
+      >
+        {channelPanel.selectedId && (
+          <ChannelDetailPanel
+            channelId={channelPanel.selectedId}
+            onClose={channelPanel.close}
+            onDeleted={() => {
+              loadChannels();
+              channelPanel.close();
+            }}
+          />
+        )}
+      </SlidePanel>
     </div>
   );
 }

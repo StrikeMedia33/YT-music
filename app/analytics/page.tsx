@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-gray-500">Loading analytics...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading analytics...</div>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
   if (!analytics) {
     return (
       <div className="p-8">
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-500 dark:text-gray-400">
           Failed to load analytics
         </div>
       </div>
@@ -122,8 +122,8 @@ export default function AnalyticsPage() {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Track performance and insights across all video jobs
           </p>
         </motion.div>
@@ -189,8 +189,8 @@ export default function AnalyticsPage() {
 
         {/* Status Breakdown */}
         <motion.div variants={itemVariants} className="mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+          <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
               Job Status Breakdown
             </h2>
             <div className="space-y-3">
@@ -203,14 +203,14 @@ export default function AnalyticsPage() {
                   return (
                     <div key={status}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700 capitalize">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                           {status.replace(/_/g, ' ')}
                         </span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
                           {count} ({percentage.toFixed(1)}%)
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                         <motion.div
                           className={clsx(
                             'h-full',
@@ -231,29 +231,29 @@ export default function AnalyticsPage() {
 
         {/* Recent Activity */}
         <motion.div variants={itemVariants}>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Recent Jobs
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Job ID
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Created
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {jobs.slice(0, 10).map((job) => (
-                    <tr key={job.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                    <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 py-3 text-sm font-mono text-gray-900 dark:text-gray-100">
                         {job.id.substring(0, 8)}...
                       </td>
                       <td className="px-4 py-3">
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
                           {job.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                         {new Date(job.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -295,26 +295,26 @@ function MetricCard({
   subtitle?: string;
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+    green: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+    red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400',
+    yellow: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400',
+    purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+    indigo: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
   };
 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="bg-white rounded-lg shadow p-6"
+      className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-6"
     >
       <div className={`inline-flex p-3 rounded-lg ${colorClasses[color]} mb-4`}>
         {icon}
       </div>
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+      <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">{value}</p>
       {subtitle && (
-        <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
       )}
     </motion.div>
   );
@@ -335,13 +335,13 @@ function getStatusColor(status: string): string {
 
 function getStatusBadgeColor(status: string): string {
   const colors: Record<string, string> = {
-    completed: 'bg-green-100 text-green-800',
-    failed: 'bg-red-100 text-red-800',
-    generating_music: 'bg-blue-100 text-blue-800',
-    generating_image: 'bg-purple-100 text-purple-800',
-    rendering: 'bg-yellow-100 text-yellow-800',
-    ready_for_export: 'bg-indigo-100 text-indigo-800',
-    planned: 'bg-gray-100 text-gray-800',
+    completed: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+    failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
+    generating_music: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
+    generating_image: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400',
+    rendering: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400',
+    ready_for_export: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400',
+    planned: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return colors[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
 }

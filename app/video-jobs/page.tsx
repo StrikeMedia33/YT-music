@@ -19,9 +19,10 @@ import {
   type VideoIdea,
 } from '@/lib/api';
 import { FiPlus, FiVideo, FiZap } from 'react-icons/fi';
-import { Button, Loading, ErrorMessage, StatusBadge, useToast } from '@/components/ui';
+import { Button, Loading, ErrorMessage, StatusBadge, useToast, SlidePanel, useSlidePanel } from '@/components/ui';
 import { useUIStore } from '@/lib/store/ui-store';
 import Link from 'next/link';
+import { VideoJobDetailPanel } from '@/components/video-jobs/VideoJobDetailPanel';
 
 export default function VideoJobsPage() {
   const router = useRouter();
@@ -49,6 +50,9 @@ export default function VideoJobsPage() {
     idea_id: undefined,
   });
   const [selectedIdea, setSelectedIdea] = useState<VideoIdea | null>(null);
+
+  // Slide panel state
+  const jobPanel = useSlidePanel<string>();
 
   // Load jobs and channels on mount
   useEffect(() => {
@@ -101,8 +105,8 @@ export default function VideoJobsPage() {
         'The pipeline will begin processing automatically.'
       );
 
-      // Navigate to job detail
-      router.push(`/video-jobs/${newJob.id}`);
+      // Open job detail panel
+      jobPanel.open(newJob.id);
     } catch (err: any) {
       setError(err.message || 'Failed to create video job');
       toast.error('Failed to create video job', err.message);
@@ -138,7 +142,7 @@ export default function VideoJobsPage() {
   }
 
   function handleViewJob(jobId: string) {
-    router.push(`/video-jobs/${jobId}`);
+    jobPanel.open(jobId);
   }
 
   // Filter jobs based on search query and status
@@ -150,19 +154,19 @@ export default function VideoJobsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-200">
         <Loading size="lg" message="Loading video jobs..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Video Jobs</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Video Jobs</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Track and manage your video generation jobs.
           </p>
         </div>
@@ -182,7 +186,7 @@ export default function VideoJobsPage() {
             {showCreateForm ? 'Cancel' : '+ Create Video Job'}
           </Button>
           {channels.length === 0 && (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Create a channel first before creating video jobs.
             </p>
           )}
@@ -190,23 +194,23 @@ export default function VideoJobsPage() {
 
         {/* Create Form */}
         {showCreateForm && (
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 transition-colors duration-200 shadow dark:shadow-gray-900/50 rounded-lg p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Create New Video Job
             </h2>
             <form onSubmit={handleCreateJob}>
               {/* Idea Selection (Optional) */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
-                  <FiZap className="text-blue-600 w-5 h-5" />
-                  <label className="text-sm font-medium text-gray-900">
+                  <FiZap className="text-blue-600 dark:text-blue-400 w-5 h-5" />
+                  <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     Use Idea Template (Optional)
                   </label>
                 </div>
                 <select
                   value={selectedIdea?.id || ''}
                   onChange={(e) => handleIdeaSelection(e.target.value)}
-                  className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Create from scratch...</option>
                   {ideas.map((idea) => (
@@ -216,7 +220,7 @@ export default function VideoJobsPage() {
                   ))}
                 </select>
                 {selectedIdea && (
-                  <p className="mt-2 text-sm text-blue-700">
+                  <p className="mt-2 text-sm text-blue-700 dark:text-blue-400">
                     Using template: <strong>{selectedIdea.title}</strong>
                     <br />
                     <span className="text-xs">
@@ -230,7 +234,7 @@ export default function VideoJobsPage() {
                 <div>
                   <label
                     htmlFor="channel_id"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Channel
                   </label>
@@ -241,7 +245,7 @@ export default function VideoJobsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, channel_id: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select a channel...</option>
                     {channels
@@ -257,7 +261,7 @@ export default function VideoJobsPage() {
                 <div>
                   <label
                     htmlFor="niche_label"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Niche Label
                   </label>
@@ -271,14 +275,14 @@ export default function VideoJobsPage() {
                       setFormData({ ...formData, niche_label: e.target.value })
                     }
                     placeholder="e.g., Baroque Classical, Urban Lo-fi"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="mood_keywords"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Mood Keywords
                   </label>
@@ -291,9 +295,9 @@ export default function VideoJobsPage() {
                       setFormData({ ...formData, mood_keywords: e.target.value })
                     }
                     placeholder="e.g., relaxing, focused, ambient, peaceful"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Comma-separated keywords describing the mood and style
                   </p>
                 </div>
@@ -301,7 +305,7 @@ export default function VideoJobsPage() {
                 <div>
                   <label
                     htmlFor="target_duration_minutes"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Target Duration (minutes)
                   </label>
@@ -318,9 +322,9 @@ export default function VideoJobsPage() {
                         target_duration_minutes: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     60-120 minutes (20 tracks × 3-6 mins each)
                   </p>
                 </div>
@@ -328,7 +332,7 @@ export default function VideoJobsPage() {
                 <div>
                   <label
                     htmlFor="output_directory"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Output Directory
                   </label>
@@ -341,9 +345,9 @@ export default function VideoJobsPage() {
                       setFormData({ ...formData, output_directory: e.target.value })
                     }
                     placeholder="./output"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Local directory for generated files
                   </p>
                 </div>
@@ -374,14 +378,14 @@ export default function VideoJobsPage() {
                 placeholder="Search by Job ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 aria-label="Search video jobs"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               aria-label="Filter by status"
             >
               <option value="all">All Statuses</option>
@@ -398,8 +402,8 @@ export default function VideoJobsPage() {
 
         {/* Jobs List */}
         {filteredJobs.length === 0 && jobs.length > 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500">
+          <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400">
               No jobs match your search criteria. Try adjusting your filters.
             </p>
           </div>
@@ -407,15 +411,15 @@ export default function VideoJobsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border-2 border-dashed border-blue-200 p-12 text-center"
+            className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-sm border-2 border-dashed border-blue-200 dark:border-blue-700 p-12 text-center"
           >
-            <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <FiVideo className="w-10 h-10 text-blue-600" />
+            <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              <FiVideo className="w-10 h-10 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-heading-md text-gray-900 mb-3">
+            <h3 className="text-heading-md text-gray-900 dark:text-gray-100 mb-3">
               Ready to create your first video?
             </h3>
-            <p className="text-body-md text-gray-600 mb-6 max-w-md mx-auto">
+            <p className="text-body-md text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
               Generate professional AI-powered background music videos in minutes.
               Perfect for YouTube channels focused on ambient, lo-fi, and study music.
             </p>
@@ -427,7 +431,7 @@ export default function VideoJobsPage() {
               <FiPlus className="mr-2 w-5 h-5" />
               Create Your First Video Job
             </Button>
-            <p className="text-caption text-gray-500 mt-4">
+            <p className="text-caption text-gray-500 dark:text-gray-400 mt-4">
               Average generation time: 30-45 minutes
             </p>
           </motion.div>
@@ -452,24 +456,24 @@ export default function VideoJobsPage() {
                   tabIndex={0}
                   role="button"
                   aria-label={`View details for job ${job.id.substring(0, 8)}, status: ${job.status}`}
-                  className="bg-white rounded-lg shadow p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-mono text-gray-600">
+                    <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
                       {job.id.substring(0, 8)}...
                     </span>
                     <StatusBadge status={job.status} />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                     <div>
-                      <span className="text-gray-500">Duration:</span>
-                      <span className="ml-1 text-gray-900 font-medium">
+                      <span className="text-gray-500 dark:text-gray-400">Duration:</span>
+                      <span className="ml-1 text-gray-900 dark:text-gray-100 font-medium">
                         {job.target_duration_minutes} min
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Created:</span>
-                      <span className="ml-1 text-gray-900 font-medium">
+                      <span className="text-gray-500 dark:text-gray-400">Created:</span>
+                      <span className="ml-1 text-gray-900 dark:text-gray-100 font-medium">
                         {new Date(job.created_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -482,48 +486,48 @@ export default function VideoJobsPage() {
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden lg:block bg-white shadow rounded-lg overflow-hidden">
+            <div className="hidden lg:block bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50 rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       Job ID
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       Duration
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       Created
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 transition-colors duration-200 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredJobs.map((job) => (
                     <tr
                       key={job.id}
-                      className="hover:bg-gray-50 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500"
                       onClick={() => handleViewJob(job.id)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -536,17 +540,17 @@ export default function VideoJobsPage() {
                       aria-label={`View details for job ${job.id.substring(0, 8)}, status: ${job.status}`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-mono text-gray-900">
+                        <div className="text-sm font-mono text-gray-900 dark:text-gray-100">
                           {job.id.substring(0, 8)}...
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge status={job.status} />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {job.target_duration_minutes} min
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(job.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -570,6 +574,18 @@ export default function VideoJobsPage() {
           </>
         )}
       </div>
+
+      {/* Slide-in Panel for Video Job Details */}
+      <SlidePanel
+        isOpen={jobPanel.isOpen}
+        onClose={jobPanel.close}
+        title="Video Job Details"
+        width="xl"
+      >
+        {jobPanel.selectedId && (
+          <VideoJobDetailPanel jobId={jobPanel.selectedId} onClose={jobPanel.close} />
+        )}
+      </SlidePanel>
     </div>
   );
 }

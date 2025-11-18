@@ -44,6 +44,10 @@ const statusConfig: Record<
     label: 'Failed',
     color: 'bg-red-100 text-red-900', // Contrast: ~7.0:1
   },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'bg-gray-400 text-gray-900', // Contrast: ~4.8:1
+  },
 };
 
 export function StatusBadge({ status, className = '' }: StatusBadgeProps) {

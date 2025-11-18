@@ -124,7 +124,7 @@ export function SlidePanel({
             animate="animate"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm transition-colors duration-200"
             style={{ zIndex: zIndex.slidePanel }}
             onClick={handleBackdropClick}
             aria-hidden="true"
@@ -137,7 +137,7 @@ export function SlidePanel({
             animate="animate"
             exit="exit"
             transition={springPhysics.default}
-            className={`fixed right-0 top-0 bottom-0 ${widthClasses[width]} w-full bg-white shadow-2xl flex flex-col`}
+            className={`fixed right-0 top-0 bottom-0 ${widthClasses[width]} w-full bg-white dark:bg-gray-800 shadow-2xl dark:shadow-gray-900/50 flex flex-col transition-colors duration-200`}
             style={{ zIndex: zIndex.slidePanel + 1 }}
             role="dialog"
             aria-modal="true"
@@ -146,12 +146,12 @@ export function SlidePanel({
           >
             {/* Sticky Header */}
             {(title || subtitle) && (
-              <div className="sticky top-0 z-10 flex items-start justify-between px-6 py-4 border-b border-gray-200 bg-white">
+              <div className="sticky top-0 z-10 flex items-start justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-200">
                 <div className="flex-1 min-w-0">
                   {title && (
                     <h2
                       id="slide-panel-title"
-                      className="text-xl font-semibold text-gray-900 truncate"
+                      className="text-xl font-semibold text-gray-900 dark:text-gray-100 truncate"
                     >
                       {title}
                     </h2>
@@ -159,7 +159,7 @@ export function SlidePanel({
                   {subtitle && (
                     <p
                       id="slide-panel-subtitle"
-                      className="mt-1 text-sm text-gray-600"
+                      className="mt-1 text-sm text-gray-600 dark:text-gray-400"
                     >
                       {subtitle}
                     </p>
@@ -169,10 +169,10 @@ export function SlidePanel({
                   <button
                     onClick={handleCloseClick}
                     disabled={preventClose}
-                    className="ml-4 p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="ml-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     aria-label="Close panel"
                   >
-                    <FiX className="w-5 h-5 text-gray-600" />
+                    <FiX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </button>
                 )}
               </div>
@@ -184,10 +184,10 @@ export function SlidePanel({
                 <button
                   onClick={handleCloseClick}
                   disabled={preventClose}
-                  className="p-2 rounded-lg bg-white hover:bg-gray-100 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Close panel"
                 >
-                  <FiX className="w-5 h-5 text-gray-600" />
+                  <FiX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
             )}
@@ -201,7 +201,7 @@ export function SlidePanel({
 
             {/* Sticky Footer */}
             {footer && (
-              <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-gray-200 bg-white">
+              <div className="sticky bottom-0 z-10 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-200">
                 {footer}
               </div>
             )}

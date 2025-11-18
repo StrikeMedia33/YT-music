@@ -21,5 +21,5 @@ export { ToastContainer, useToast, useToastStore } from './Toast';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
 
-export { SlideInPanel, useSlideInPanel } from './SlideInPanel';
-export type { SlideInPanelProps } from './SlideInPanel';
+export { SlidePanel, useSlidePanel } from './SlidePanel';
+export type { SlidePanelProps } from './SlidePanel';

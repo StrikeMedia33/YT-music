@@ -64,7 +64,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-gray-500">Loading dashboard...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading dashboard...</div>
       </div>
     );
   }
@@ -78,8 +78,8 @@ export default function DashboardPage() {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Welcome to AI Background Channel Studio
           </p>
         </motion.div>
@@ -122,17 +122,17 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <motion.div variants={itemVariants} className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/video-jobs">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 p-6 hover:border-blue-500 transition cursor-pointer"
+                className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 p-6 hover:border-blue-500 dark:hover:border-blue-400 transition cursor-pointer"
               >
-                <FiPlus className="w-8 h-8 text-blue-600 mb-2" />
-                <h3 className="font-semibold text-gray-900">Create Video Job</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <FiPlus className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Create Video Job</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Start a new video generation pipeline
                 </p>
               </motion.div>
@@ -142,11 +142,11 @@ export default function DashboardPage() {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition cursor-pointer"
+                className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition cursor-pointer"
               >
-                <FiList className="w-8 h-8 text-gray-700 mb-2" />
-                <h3 className="font-semibold text-gray-900">Manage Channels</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <FiList className="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Manage Channels</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {channels.length} channel{channels.length !== 1 ? 's' : ''} configured
                 </p>
               </motion.div>
@@ -156,11 +156,11 @@ export default function DashboardPage() {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition cursor-pointer"
+                className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition cursor-pointer"
               >
-                <FiVideo className="w-8 h-8 text-gray-700 mb-2" />
-                <h3 className="font-semibold text-gray-900">View All Jobs</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <FiVideo className="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">View All Jobs</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Browse and manage video jobs
                 </p>
               </motion.div>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         {/* Recent Jobs */}
         <motion.div variants={itemVariants}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Jobs</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Recent Jobs</h2>
             <Link href="/video-jobs">
               <Button variant="ghost" size="sm">
                 View All
@@ -183,15 +183,15 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border-2 border-dashed border-blue-200 p-12 text-center"
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-sm border-2 border-dashed border-blue-200 dark:border-blue-700 p-12 text-center"
             >
-              <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-                <FiVideo className="w-10 h-10 text-blue-600" />
+              <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                <FiVideo className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-heading-md text-gray-900 mb-3">
+              <h3 className="text-heading-md text-gray-900 dark:text-gray-100 mb-3">
                 Ready to create your first video?
               </h3>
-              <p className="text-body-md text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-body-md text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                 Generate professional AI-powered background music videos in minutes.
                 Perfect for YouTube channels focused on ambient, lo-fi, and study music.
               </p>
@@ -201,41 +201,41 @@ export default function DashboardPage() {
                   Create Your First Video
                 </Button>
               </Link>
-              <p className="text-caption text-gray-500 mt-4">
+              <p className="text-caption text-gray-500 dark:text-gray-400 mt-4">
                 Average generation time: 30-45 minutes
               </p>
             </motion.div>
           ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Job ID
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                       Created
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {jobs.slice(0, 5).map((job) => (
-                    <tr key={job.id} className="hover:bg-gray-50">
+                    <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
                           href={`/video-jobs/${job.id}`}
-                          className="text-sm font-mono text-blue-600 hover:text-blue-800"
+                          className="text-sm font-mono text-blue-600 dark:text-white hover:text-blue-800 dark:hover:text-gray-300"
                         >
                           {job.id.substring(0, 8)}...
                         </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-900">{job.status}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100">{job.status}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(job.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -262,22 +262,22 @@ function StatCard({
   color: 'blue' | 'green' | 'yellow' | 'red';
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    red: 'bg-red-50 text-red-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+    green: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+    yellow: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400',
+    red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400',
   };
 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="bg-white rounded-lg shadow p-6"
+      className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-6"
     >
       <div className={`inline-flex p-3 rounded-lg ${colorClasses[color]} mb-4`}>
         {icon}
       </div>
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+      <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">{value}</p>
     </motion.div>
   );
 }

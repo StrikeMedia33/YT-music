@@ -9,19 +9,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { getVideoJob, cancelVideoJob, type VideoJobDetail } from '@/lib/api';
-import { Button, Loading, ErrorMessage, StatusBadge } from '@/components/ui';
+import { Button, Loading, ErrorMessage, StatusBadge, ConfirmDialog, useToast } from '@/components/ui';
 import { useJobProgress } from '@/lib/hooks/use-job-progress';
 import { ProgressTracker } from '@/components/progress/ProgressTracker';
 
 export default function VideoJobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const jobId = params.id as string;
 
   const [job, setJob] = useState<VideoJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canceling, setCanceling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Real-time progress tracking via SSE
   const shouldTrackProgress =
@@ -64,17 +66,16 @@ export default function VideoJobDetailPage() {
   }
 
   async function handleCancelJob() {
-    if (!confirm('Are you sure you want to cancel this job? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       setCanceling(true);
       await cancelVideoJob(jobId);
+      toast.success('Job cancelled', 'The video job has been cancelled.');
+      setShowCancelConfirm(false);
       // Reload job data to reflect cancelled status
       await loadJob();
     } catch (err: any) {
-      alert(err.message || 'Failed to cancel job');
+      toast.error('Failed to cancel job', err.message || 'An error occurred');
+      setShowCancelConfirm(false);
     } finally {
       setCanceling(false);
     }
@@ -128,10 +129,10 @@ export default function VideoJobDetailPage() {
               {!['completed', 'failed', 'cancelled'].includes(job.status) && (
                 <Button
                   variant="danger"
-                  onClick={handleCancelJob}
+                  onClick={() => setShowCancelConfirm(true)}
                   disabled={canceling}
                 >
-                  {canceling ? 'Canceling...' : 'Cancel Job'}
+                  Cancel Job
                 </Button>
               )}
             </div>
@@ -428,6 +429,19 @@ export default function VideoJobDetailPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={handleCancelJob}
+        title="Cancel Video Job?"
+        description="Are you sure you want to cancel this job? This action cannot be undone."
+        confirmText="Cancel Job"
+        cancelText="Keep Job"
+        variant="danger"
+        loading={canceling}
+      />
     </div>
   );
 }

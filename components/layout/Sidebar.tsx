@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import {
   FiHome,
   FiVideo,
+  FiFilm,
   FiList,
   FiSettings,
   FiBarChart2,
@@ -44,6 +45,11 @@ const navItems: NavItem[] = [
     label: 'Video Jobs',
     href: '/video-jobs',
     icon: <FiVideo className="w-5 h-5" />,
+  },
+  {
+    label: 'Videos',
+    href: '/videos',
+    icon: <FiFilm className="w-5 h-5" />,
   },
   {
     label: 'Channels',
@@ -92,24 +98,25 @@ export function Sidebar() {
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={clsx(
-          'fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30',
+          'fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30',
           'flex flex-col',
-          'lg:translate-x-0'
+          'lg:translate-x-0',
+          'transition-colors duration-200'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl">🎵</span>
-            <span className="font-bold text-gray-900 text-lg">
-              AI Studio
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <Link href="/" className="flex items-center justify-center space-x-2 flex-1">
+            <FiYoutube className="w-6 h-6 text-red-600 dark:text-red-500" />
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+              YT Music Studio
             </span>
           </Link>
           <button
             onClick={toggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
-            <FiX className="w-5 h-5" />
+            <FiX className="w-5 h-5 text-gray-700 dark:text-gray-200" />
           </button>
         </div>
 
@@ -129,8 +136,8 @@ export function Sidebar() {
                   className={clsx(
                     'flex items-center space-x-3 px-4 py-3 rounded-lg transition',
                     isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   )}
                 >
                   {item.icon}
@@ -142,8 +149,8 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
             Powered by Claude Code
           </p>
         </div>
@@ -155,9 +162,9 @@ export function Sidebar() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-20 lg:hidden p-2 bg-white rounded-lg shadow-lg border border-gray-200"
+          className="fixed top-4 left-4 z-20 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
         >
-          <FiMenu className="w-6 h-6" />
+          <FiMenu className="w-6 h-6 text-gray-700 dark:text-gray-200" />
         </motion.button>
       )}
     </>
