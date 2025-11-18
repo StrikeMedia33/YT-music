@@ -22,6 +22,7 @@ import {
 } from 'react-icons/fi';
 import { getIdea, deleteIdea, cloneIdea, updateIdea, generatePromptsForIdea } from '@/lib/api';
 import type { VideoIdeaDetail, VideoIdeaUpdate } from '@/lib/api';
+import { ConfirmDialog, useToast } from '@/components/ui';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -29,6 +30,7 @@ interface Props {
 
 export default function IdeaDetailPage({ params }: Props) {
   const router = useRouter();
+  const toast = useToast();
   const unwrappedParams = React.use(params);
   const ideaId = unwrappedParams.id;
 
@@ -38,6 +40,8 @@ export default function IdeaDetailPage({ params }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<VideoIdeaUpdate>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadIdea();
@@ -70,9 +74,10 @@ export default function IdeaDetailPage({ params }: Props) {
     try {
       await updateIdea(idea.id, editData);
       setIsEditing(false);
+      toast.success('Idea updated', 'Your changes have been saved successfully.');
       loadIdea(); // Reload to get updated data
     } catch (err: any) {
-      alert(`Failed to save: ${err.message}`);
+      toast.error('Failed to save', err.message || 'An error occurred while saving');
     }
   }
 
@@ -80,20 +85,26 @@ export default function IdeaDetailPage({ params }: Props) {
     if (!idea) return;
     try {
       const cloned = await cloneIdea(idea.id, `${idea.title} (Copy)`);
+      toast.success('Idea cloned', 'A copy of the idea has been created.');
       router.push(`/ideas/${cloned.id}`);
     } catch (err: any) {
-      alert(`Failed to clone: ${err.message}`);
+      toast.error('Failed to clone', err.message || 'An error occurred while cloning');
     }
   }
 
   async function handleDelete() {
     if (!idea) return;
-    if (!confirm('Are you sure you want to delete this idea?')) return;
     try {
+      setIsDeleting(true);
       await deleteIdea(idea.id);
+      toast.success('Idea deleted', 'The idea has been permanently deleted.');
+      setShowDeleteConfirm(false);
       router.push('/ideas');
     } catch (err: any) {
-      alert(`Failed to delete: ${err.message}`);
+      toast.error('Failed to delete', err.message || 'An error occurred while deleting');
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -102,14 +113,13 @@ export default function IdeaDetailPage({ params }: Props) {
     setIsGenerating(true);
     try {
       const result = await generatePromptsForIdea(idea.id);
-      alert(
-        `${result.message}\n\n` +
-        `Generated ${result.num_music_prompts} music prompts and ${result.num_visual_prompts} visual prompts.\n` +
-        `YouTube metadata: ${result.metadata_generated ? 'Yes' : 'No'}`
+      toast.success(
+        'Prompts generated',
+        `Generated ${result.num_music_prompts} music prompts and ${result.num_visual_prompts} visual prompts.`
       );
       loadIdea(); // Reload to show new prompts
     } catch (err: any) {
-      alert(`Failed to generate prompts: ${err.message}`);
+      toast.error('Failed to generate prompts', err.message || 'An error occurred');
     } finally {
       setIsGenerating(false);
     }
@@ -216,7 +226,7 @@ export default function IdeaDetailPage({ params }: Props) {
                     <span>Clone</span>
                   </button>
                   <button
-                    onClick={handleDelete}
+                    onClick={() => setShowDeleteConfirm(true)}
                     className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                   >
                     <FiTrash2 className="w-4 h-4" />
@@ -443,6 +453,19 @@ export default function IdeaDetailPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Idea?"
+        description={`Are you sure you want to delete "${idea?.title}"? This action cannot be undone.`}
+        confirmText="Delete Idea"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 }

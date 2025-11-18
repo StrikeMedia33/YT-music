@@ -92,7 +92,7 @@ export default function CreateIdeaPage() {
     (formData.num_tracks ?? 0) <= 30;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 p-6">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -100,13 +100,13 @@ export default function CreateIdeaPage() {
             <FiArrowLeft className="w-4 h-4 mr-2" />
             Back to Ideas Library
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Idea</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Create New Idea</h1>
           <p className="text-gray-600 mt-1">Define a new video concept for your library</p>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -116,7 +116,7 @@ export default function CreateIdeaPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow p-8 space-y-6"
+          className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow dark:shadow-gray-900/50 p-8 space-y-6"
         >
           {/* Title */}
           <div>
@@ -128,7 +128,7 @@ export default function CreateIdeaPage() {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Rainy Tokyo Night Beats"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -144,7 +144,7 @@ export default function CreateIdeaPage() {
             <select
               value={formData.genre_id}
               onChange={(e) => setFormData({ ...formData, genre_id: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
               <option value="">Select a genre...</option>
@@ -167,7 +167,7 @@ export default function CreateIdeaPage() {
               value={formData.niche_label}
               onChange={(e) => setFormData({ ...formData, niche_label: e.target.value })}
               placeholder="e.g., Lo-fi Hip Hop - Urban Japan"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -183,7 +183,7 @@ export default function CreateIdeaPage() {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
               placeholder="Describe the mood, style, and intended use of this video concept..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">
               Provide details to help guide music and visual generation
@@ -205,7 +205,7 @@ export default function CreateIdeaPage() {
                   }
                 }}
                 placeholder="e.g., calm, atmospheric, nostalgic"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
                 type="button"
@@ -251,7 +251,7 @@ export default function CreateIdeaPage() {
                 }
                 min={60}
                 max={120}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">Between 60-120 minutes</p>
@@ -267,7 +267,7 @@ export default function CreateIdeaPage() {
                 onChange={(e) => setFormData({ ...formData, num_tracks: parseInt(e.target.value) })}
                 min={10}
                 max={30}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">Between 10-30 tracks</p>
@@ -283,13 +283,13 @@ export default function CreateIdeaPage() {
               onChange={(e) => setFormData({ ...formData, is_template: e.target.checked })}
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            <label htmlFor="is_template" className="text-sm text-gray-700">
+            <label htmlFor="is_template" className="text-sm text-gray-700 dark:text-gray-300">
               Save as reusable template
             </label>
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <Link
               href="/ideas"
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
@@ -321,7 +321,7 @@ export default function CreateIdeaPage() {
         </motion.form>
 
         {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg p-4">
           <h3 className="font-medium text-blue-900 mb-2">What's Next?</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• After creating, you can generate AI prompts for music and visuals</li>
