@@ -3,7 +3,7 @@ AudioTrack Model
 Represents individual generated audio tracks (20 per video)
 """
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum, CheckConstraint, UniqueConstraint, Numeric
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Enum, CheckConstraint, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -28,6 +28,9 @@ class AudioTrack(Base):
     Represents one of 20 unique music tracks in a video
     Tracks are ordered 1-20 and paired with corresponding visuals
 
+    Supports alternative versions: multiple tracks can share the same order_index,
+    but only one is selected for the final video.
+
     Attributes:
         id: Unique track identifier (UUID)
         video_job_id: Foreign key to video_jobs table
@@ -38,6 +41,9 @@ class AudioTrack(Base):
         local_file_path: Path to audio file
         license_document_url: URL to licensing documentation
         prompt_text: LLM prompt used to generate this track
+        is_alternative: True if this is an alternative version (not the first generation)
+        is_selected: True if this version is selected for the final video
+        display_order: Custom order for final video (nullable until arranged by user)
         created_at: Creation timestamp
     """
 
@@ -62,6 +68,11 @@ class AudioTrack(Base):
     license_document_url = Column(Text, nullable=True)
     prompt_text = Column(Text, nullable=False)
 
+    # Alternative Assets & Arrangement
+    is_alternative = Column(Boolean, default=False, nullable=False)
+    is_selected = Column(Boolean, default=True, nullable=False)
+    display_order = Column(Integer, nullable=True)
+
     # Timestamp
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -71,7 +82,6 @@ class AudioTrack(Base):
     __table_args__ = (
         CheckConstraint("order_index BETWEEN 1 AND 20", name="check_order_index_range"),
         CheckConstraint("duration_seconds > 0", name="check_duration_positive"),
-        UniqueConstraint("video_job_id", "order_index", name="unique_video_job_order"),
     )
 
     # Relationships
@@ -92,5 +102,8 @@ class AudioTrack(Base):
             "local_file_path": self.local_file_path,
             "license_document_url": self.license_document_url,
             "prompt_text": self.prompt_text,
+            "is_alternative": self.is_alternative,
+            "is_selected": self.is_selected,
+            "display_order": self.display_order,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
