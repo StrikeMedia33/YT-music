@@ -80,7 +80,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex items-center justify-center">
         <Loading size="lg" message="Loading settings..." />
       </div>
     );
@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
   if (error && !settings) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 p-8">
         <ErrorMessage
           title="Failed to Load Settings"
           message={error}
@@ -99,7 +99,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 p-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -107,8 +107,8 @@ export default function SettingsPage() {
         >
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Configure AI providers for music and visual generation
             </p>
           </div>
@@ -120,14 +120,14 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Music Providers */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-md p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <FiMusic className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <FiMusic className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Music Providers</h2>
-                  <p className="text-sm text-gray-600">Generate AI music tracks</p>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Music Providers</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Generate AI music tracks</p>
                 </div>
               </div>
 
@@ -144,14 +144,14 @@ export default function SettingsPage() {
             </div>
 
             {/* Visual Providers */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-md p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <FiImage className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <FiImage className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Visual Providers</h2>
-                  <p className="text-sm text-gray-600">Generate background visuals</p>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Visual Providers</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Generate background visuals</p>
                 </div>
               </div>
 
@@ -173,10 +173,10 @@ export default function SettingsPage() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 bg-white rounded-lg shadow-md p-6"
+              className="mt-6 bg-white dark:bg-gray-800 transition-colors duration-200 rounded-lg shadow-md p-6"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-700">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                   <FiAlertCircle />
                   <span className="text-sm font-medium">You have unsaved changes</span>
                 </div>
@@ -204,16 +204,16 @@ export default function SettingsPage() {
           )}
 
           {/* Info Box */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
             <div className="flex gap-3">
-              <FiAlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <FiAlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-blue-900 mb-2">Configuration Notes</h3>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Providers require API keys to be configured in your <code className="px-1 py-0.5 bg-blue-100 rounded">.env</code> file</li>
+                <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Configuration Notes</h3>
+                <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <li>• Providers require API keys to be configured in your <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-900 dark:text-blue-300">.env</code> file</li>
                   <li>• Only connected providers (with valid API keys) can be selected</li>
                   <li>• Settings are saved to environment variables for the current session</li>
-                  <li>• For persistent configuration, update your <code className="px-1 py-0.5 bg-blue-100 rounded">.env</code> file directly</li>
+                  <li>• For persistent configuration, update your <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/30 rounded text-blue-900 dark:text-blue-300">.env</code> file directly</li>
                 </ul>
               </div>
             </div>
@@ -240,42 +240,42 @@ function ProviderCard({ provider, selected, onSelect }: ProviderCardProps) {
         relative p-4 rounded-lg border-2 transition-all
         ${provider.connected ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}
         ${selected && provider.connected
-          ? 'border-blue-500 bg-blue-50'
+          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
           : provider.connected
-          ? 'border-gray-200 hover:border-gray-300 bg-white'
-          : 'border-gray-200 bg-gray-50'
+          ? 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800'
+          : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'
         }
       `}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{provider.name}</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">{provider.name}</h3>
             {provider.connected ? (
-              <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+              <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">
                 <FiCheck className="w-3 h-3" />
                 <span>Connected</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-200 text-gray-600 text-xs rounded-full">
+              <div className="flex items-center gap-1 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full">
                 <FiX className="w-3 h-3" />
                 <span>Not Connected</span>
               </div>
             )}
           </div>
-          <p className="text-sm text-gray-600">{provider.description}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{provider.description}</p>
         </div>
 
         {selected && provider.connected && (
-          <div className="ml-3 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="ml-3 w-6 h-6 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
             <FiCheck className="w-4 h-4 text-white" />
           </div>
         )}
       </div>
 
       {!provider.connected && (
-        <div className="mt-3 text-xs text-gray-500">
-          Add <code className="px-1 py-0.5 bg-gray-200 rounded font-mono">{provider.provider.toUpperCase()}_API_KEY</code> to your .env file
+        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          Add <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-300 rounded font-mono">{provider.provider.toUpperCase()}_API_KEY</code> to your .env file
         </div>
       )}
     </motion.div>

@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from api.channels import router as channels_router
 from api.video_jobs import router as video_jobs_router
+from api.videos import router as videos_router
 from api.genres import router as genres_router
 from api.ideas import router as ideas_router
 from api.youtube_scraper import router as youtube_scraper_router
@@ -139,6 +140,7 @@ app.add_middleware(
 # Routes
 app.include_router(channels_router, prefix="/api/channels", tags=["channels"])
 app.include_router(video_jobs_router, prefix="/api/video-jobs", tags=["video-jobs"])
+app.include_router(videos_router)  # Already has prefix in router definition
 app.include_router(genres_router, prefix="/api/genres", tags=["genres"])
 app.include_router(ideas_router, prefix="/api/ideas", tags=["ideas"])
 app.include_router(youtube_scraper_router, prefix="/api/youtube-scraper", tags=["youtube-scraper"])
